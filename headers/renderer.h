@@ -3,6 +3,7 @@
 
 #include <vulkan/vulkan.h>
 #include "GLFW/glfw3.h"
+#include <glm/glm.hpp>
 #include <cstdint>
 #include <optional>
 #include <vector>
@@ -11,10 +12,13 @@
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
+const int MAX_FRAMES_IN_FLIGHT = 2;
+
 
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
 };
+
 
 #ifdef NDEBUG
     const bool enableValidationLayers = false;
@@ -52,6 +56,7 @@ private:
     GLFWwindow* window = nullptr;
     void initGLFW();
     void cleanup();
+    static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
 /*
     Vulkan structures
@@ -76,8 +81,12 @@ private:
     std::vector<VkFramebuffer> swapChainFramebuffers;
     VkCommandPool commandPool;
     std::vector<VkCommandBuffer> commandBuffers;
-    VkSemaphore imageAvailableSemaphore;
-    VkSemaphore renderFinishedSemaphore;
+    std::vector<VkSemaphore> imageAvailableSemaphores;
+    std::vector<VkSemaphore> renderFinishedSemaphores;
+    std::vector<VkFence> inFlightFences;
+    std::vector<VkFence> imagesInFlight;
+    size_t currentFrame = 0;
+    bool framebufferResized = false;
 
 
 /*
@@ -105,6 +114,8 @@ private:
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
     VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
     void createSwapChain();
+    void cleanupSwapChain();
+    void recreateSwapChain();
     void createImageViews();
     VkShaderModule createShaderModule(const std::vector<char>& code);   
     void createGraphicsPipeline();
@@ -112,7 +123,8 @@ private:
     void createFramebuffers();
     void createCommandPool();
     void createCommandBuffers();
-    void createSemaphores();
+    void createSyncObjects();
+
 
     void createLogicalDevice();
     void createSurface();
