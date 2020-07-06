@@ -1,3 +1,2 @@
-C:/VulkanSDK/1.2.141.0/Bin32/glslc.exe shader.vert -o vert.spv
-C:/VulkanSDK/1.2.141.0/Bin32/glslc.exe shader.frag -o frag.spv
-pause
+C:/VulkanSDK/1.2.141.0/Bin32/glslc.exe shader.vert --target-env=vulkan -fshader-stage=vert -o vert.spv
+C:/VulkanSDK/1.2.141.0/Bin32/glslc.exe shader.frag --target-env=vulkan -fshader-stage=frag -o frag.spv
