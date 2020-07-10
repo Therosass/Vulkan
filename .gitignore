@@ -1,3 +1,5 @@
 .vscode
+textures
+models
 build
 *.spv
