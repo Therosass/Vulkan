@@ -4,6 +4,11 @@
 #define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
 
+
+
+#include "keyHandler.h"
+
+
 #define GLM_ENABLE_EXPERIMENTAL
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -81,6 +86,7 @@ struct UniformBufferObject {
     glm::mat4 proj;
 };
 
+
 /****
  * 
  * CONSTANT DEFINES
@@ -91,8 +97,8 @@ struct UniformBufferObject {
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
 
-const std::string MODEL_PATH = "models/BeeModel.obj";
-const std::string TEXTURE_PATH = "textures/black_and_yellow.png";
+const std::string MODEL_PATH = "models/viking.obj";
+const std::string TEXTURE_PATH = "textures/viking.png";
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -130,6 +136,8 @@ public:
     void run();
 private:
 
+    static bool lbutton_down;
+
 /*
     GLFW window creation
 */  
@@ -137,6 +145,8 @@ private:
     void initGLFW();
     void cleanup();
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
+    static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+    static void mouse_callback(GLFWwindow* window, double xPos, double yPos);
 
 /*
     Vulkan objects
@@ -171,8 +181,29 @@ private:
 
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
+    std::vector<Vertex> bg_vertices = {
+        {{-1.0f, -1.0f, -1.0f},{1.0f, 1.0f, 1.0f},{0.0f, 0.0f}}, //top left behind 0
+        {{-1.0f, -1.0f, +1.0f},{1.0f, 1.0f, 1.0f},{0.0f, 0.0f}}, //top left front 1
+        {{-1.0f, +1.0f, -1.0f},{1.0f, 1.0f, 1.0f},{0.0f, 0.0f}}, //top right behind 2
+        {{-1.0f, +1.0f, +1.0f},{1.0f, 1.0f, 1.0f},{0.0f, 0.0f}}, //top right front 3
+        {{+1.0f, -1.0f, -1.0f},{1.0f, 1.0f, 1.0f},{0.0f, 0.0f}}, //bottom left behind 4
+        {{+1.0f, -1.0f, +1.0f},{1.0f, 1.0f, 1.0f},{0.0f, 0.0f}}, //bottom left front 5
+        {{+1.0f, +1.0f, -1.0f},{1.0f, 1.0f, 1.0f},{0.0f, 0.0f}}, //bottom right behind 6
+        {{+1.0f, +1.0f, +1.0f},{1.0f, 1.0f, 1.0f},{0.0f, 0.0f}} //bottom right front 7
+        };
+
+    std::vector<uint32_t> bg_indices = {
+        0,1,3,0,3,2, // top
+        2,4,0,2,6,4, // behind
+        0,4,5,0,5,1, // left
+        5,4,6,5,6,7, // bottom
+        3,7,6,3,6,2, // right
+        1,5,7,1,7,3  // front
+        };
     VkBuffer vertexBuffer;
     VkDeviceMemory vertexBufferMemory;
+    VkBuffer bgBuffer;
+    VkDeviceMemory bgBufferMemory;
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
     std::vector<VkBuffer> uniformBuffers;
@@ -189,6 +220,8 @@ private:
 
     size_t currentFrame = 0;
     bool framebufferResized = false;
+
+
 
 
 /*
@@ -231,6 +264,7 @@ private:
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     void createIndexBuffer();
     void createVertexBuffer();
+    void createBgBuffer();
     void createUniformBuffers();
     void updateUniformBuffer(uint32_t currentImage);
     void createDescriptorPool();
@@ -268,6 +302,22 @@ private:
  * Model loading
  * 
  ****/
+
+
+/*****
+ * 
+ * Camera functions
+ * 
+ ****/
+
+    static glm::vec3 cameraPos;
+    static glm::vec3 cameraDir;
+    static glm::vec3 cameraRight;
+    static glm::vec3 cameraUp;
+    static glm::vec3 lookPos;
+
+    void setCamera();
+    static glm::vec3 readNewCameraPos(std::string posAsString);
 
     void loadModel();
 };

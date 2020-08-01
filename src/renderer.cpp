@@ -7,6 +7,7 @@
 #include <tiny_obj_loader.h>
 
 #include "stdio.h"
+#include "math.h"
 #include "stdlib.h"
 #include <cstring>  
 #include <cstdlib>
@@ -15,6 +16,16 @@
 #include <stdexcept>
 #include <vector>
 #include <set>
+#include <regex>
+#include <glm/gtc/quaternion.hpp>
+
+glm::vec3 Renderer::cameraPos;
+glm::vec3 Renderer::cameraDir;
+glm::vec3 Renderer::cameraRight;
+glm::vec3 Renderer::cameraUp;
+glm::vec3 Renderer::lookPos;
+static double XP = 0;
+static double YP = 0;
 
 /*****
  * 
@@ -22,15 +33,137 @@
  * 
 *****/
 
+bool Renderer::lbutton_down = false;
+
 void error_callback(int error, const char* description)
 {
     fprintf(stderr, "Error: %s\n", description);
 }
 
-static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void Renderer::mouse_callback(GLFWwindow* window, double xPos, double yPos){
+    XP += xPos/1000;
+    YP += yPos/1000;
+
+    while(XP > 360){
+        XP -= 360;
+    }
+    while(XP < 0){
+        XP += 360;
+    }
+    if(YP > 85){
+        YP = 85;
+    }
+    if(YP < -85){
+        YP = -85;
+    }
+    cameraDir = glm::vec3(0.0f,0.0f,1.0f);
+    glm::quat turnQuat = glm::angleAxis(float(-XP/glm::half_pi<float>()), glm::vec3(0.0f,1.0f,0.0f));
+    cameraDir = turnQuat * cameraDir;
+    turnQuat = glm::angleAxis(glm::half_pi<float>(), glm::vec3(0.0f,1.0f,0.0f));
+    cameraRight = turnQuat * cameraDir;
+    turnQuat = glm::angleAxis(float(YP/glm::half_pi<float>()), cameraRight);
+    cameraUp =  glm::normalize(glm::cross(cameraRight, lookPos));
+    cameraDir = turnQuat * cameraDir;
+    lookPos = cameraPos + cameraDir;
+
+    //cameraRight = cameraPos + ((glm::angleAxis(glm::half_pi<float>(),glm::vec3(0.0f,1.0f,0.0f))) * cameraDir);
+    //cameraUp = glm::normalize(glm::cross(cameraRight, lookPos));
+    /*cameraDir = lookPos - cameraPos;
+    turnQuat = glm::angleAxis(float(YP/glm::half_pi<float>()), glm::vec3(0.0f,0.0f,1.0f));
+    cameraDir = turnQuat * cameraDir;
+    lookPos = cameraPos + cameraDir;*/
+    /*lookPos = cameraPos + (turnQuat * (lookPos - cameraPos));
+    cameraUp = glm::normalize(turnQuat * cameraUp);*/
+
+
+    glfwSetCursorPos(window, 0, 0);
+    /*
+    while(cameraDir.x > 360){
+        cameraDir.x -= 360;
+    }
+    while(cameraDir.x < 0){
+        cameraDir.x += 360;
+    }
+    while(cameraDir.y > 360){
+        cameraDir.y -= 360;
+    }
+    while(cameraDir.y < 0){
+        cameraDir.y += 360;
+    }*/
+
+    std::cout << "Camera Data" << std::endl;
+    std::cout << "Rotations (X:Y) " << XP << " " << YP << std::endl;
+    std::cout << "Camera Direction " << cameraDir.x << " " << cameraDir.y << std::endl;
+    std::cout << "Camera Position " << cameraPos.x << " " << cameraPos.y << " " << cameraPos.z << std::endl;
+    std::cout << "Look position " << lookPos.x << " " << lookPos.y << " " << lookPos.z << std::endl;
+    std::cout << "Camera up " << cameraUp.x << " " <<  cameraUp.y << " " <<  cameraUp.z << std::endl;
+    std::cout << "Camera right " << cameraRight.x << " " <<  cameraRight.y << " " <<  cameraRight.z << std::endl;
+
+}
+
+void Renderer::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS){
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+    }
+    if(key == GLFW_KEY_W){
+
+        auto cameraMov = glm::normalize(glm::vec3(cameraPos-lookPos));
+        cameraMov /= 10;
+        cameraPos -= cameraMov;
+        lookPos -= cameraMov;
+    }
+    if(key == GLFW_KEY_A){
+        auto cameraMov = cameraRight;
+        cameraMov /= 10;
+        cameraPos += cameraMov;
+        lookPos += cameraMov;
+    }
+    if(key == GLFW_KEY_S){
+        auto cameraMov = glm::normalize(glm::vec3(cameraPos-lookPos));
+        cameraMov /= 10;
+        cameraPos += cameraMov;
+        lookPos += cameraMov;
+    }
+    if(key == GLFW_KEY_D){
+        auto cameraMov = -cameraRight;
+        cameraMov /= 10;
+        cameraPos += cameraMov;
+        lookPos += cameraMov;
+    }
+    if(key == GLFW_KEY_SPACE){
+        cameraPos = glm::vec3(1.0f,0.0f,0.0f);
+        cameraUp = glm::vec3(0.0f,1.0f,0.0f);
+        XP = 0;
+        YP = 0;
+        cameraRight = glm::normalize(glm::cross(cameraPos,cameraUp));
+        lookPos = glm::vec3(0.0f,0.0f,0.0f);
+    }
+    if(key == GLFW_KEY_C){
+        std::string read;
+        std::cin.clear();
+        std::cin >> read;
+        cameraPos = readNewCameraPos(read);
+
+        
+    }
+
+    if (key == GLFW_MOUSE_BUTTON_LEFT) {
+        if(GLFW_PRESS == action){
+            printf("ASDSADDSADAS");
+            lbutton_down = true;
+        }
+        else if(GLFW_RELEASE == action){
+            lbutton_down = false;
+        }
+    }
+
+    if(lbutton_down){
+        double x;
+        double y;
+        glfwGetCursorPos(window,&x,&y);
+        printf("%d %d", x, y);
+    }
 }
 
 void Renderer::run(){
@@ -54,6 +187,12 @@ void Renderer::initGLFW(){
 	window = glfwCreateWindow(WIDTH, HEIGHT, "Vulcanicus", NULL, NULL);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    if (glfwRawMouseMotionSupported()){
+        //glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+        glfwSetCursorPosCallback(window, mouse_callback);
+    }
+
 	if (!window)
 	{
 		// Window or OpenGL context creation failed
@@ -75,6 +214,8 @@ void Renderer::cleanup() {
     vkFreeMemory(device, textureImageMemory, nullptr);
     vkDestroyBuffer(device, vertexBuffer, nullptr);
     vkFreeMemory(device, vertexBufferMemory, nullptr);
+    vkDestroyBuffer(device, bgBuffer, nullptr);
+    vkFreeMemory(device, bgBufferMemory, nullptr);
     vkDestroyBuffer(device, indexBuffer, nullptr);
     vkFreeMemory(device, indexBufferMemory, nullptr);
 
@@ -196,7 +337,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::debugCallback(
 }
 
 void Renderer::setupDebugMessenger() {
-    if (!enableValidationLayers) return;
+    if (!enableValidationLayers)
+        return;
 
     VkDebugUtilsMessengerCreateInfoEXT createInfo;
     populateDebugMessengerCreateInfo(createInfo);
@@ -233,6 +375,7 @@ void Renderer::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoE
     createInfo.pfnUserCallback = debugCallback;
 }
 void Renderer::initVulkan(){
+    setCamera();
     createInstance();
     setupDebugMessenger();
     createSurface();
@@ -251,6 +394,7 @@ void Renderer::initVulkan(){
     createTextureSampler();
     loadModel();
     createVertexBuffer();
+    createBgBuffer();
     createIndexBuffer();
     createUniformBuffers();
     createDescriptorPool();
@@ -874,7 +1018,11 @@ void Renderer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemor
 
 
 void Renderer::createIndexBuffer() {
-    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+    //VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+    VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size() +
+                              sizeof(bg_indices[0]) * bg_indices.size();
+
+    VkDeviceSize bgSize = sizeof(bg_indices[0]) * bg_indices.size();
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -882,7 +1030,9 @@ void Renderer::createIndexBuffer() {
 
     void* data;
     vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, indices.data(), (size_t) bufferSize);
+    //memcpy(data, indices.data(), (size_t) bufferSize);
+    memcpy(data, bg_indices.data(), (size_t)bgSize );
+    //memcpy(data+bgSize, indices.data(), (size_t)(bufferSize)-(size_t)(bgSize) );
     vkUnmapMemory(device, stagingBufferMemory);
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
@@ -895,7 +1045,7 @@ void Renderer::createIndexBuffer() {
 
 void Renderer::createVertexBuffer() {
     VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
-
+    
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
@@ -906,11 +1056,29 @@ void Renderer::createVertexBuffer() {
     vkUnmapMemory(device, stagingBufferMemory);
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
-
     copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 
     vkDestroyBuffer(device, stagingBuffer, nullptr);
     vkFreeMemory(device, stagingBufferMemory, nullptr);
+}
+
+void Renderer::createBgBuffer(){
+    VkDeviceSize bufferSize = sizeof(bg_vertices[0]) * bg_vertices.size();
+    
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+    void* data;
+    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+        memcpy(data, bg_vertices.data(), (size_t) bufferSize);
+    vkUnmapMemory(device, stagingBufferMemory);
+
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, bgBuffer, bgBufferMemory);
+    copyBuffer(stagingBuffer, bgBuffer, bufferSize);
+
+    vkDestroyBuffer(device, stagingBuffer, nullptr);
+    vkFreeMemory(device, stagingBufferMemory, nullptr);   
 }
 
 void Renderer::createUniformBuffers() {
@@ -930,10 +1098,11 @@ void Renderer::updateUniformBuffer(uint32_t currentImage) {
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
     UniformBufferObject ubo{};
-    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 1.0f));
-    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.view = glm::lookAt(cameraPos, lookPos, cameraUp);
     ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f);
     ubo.proj[1][1] *= -1;
+
     void* data;
     vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
     memcpy(data, &ubo, sizeof(ubo));
@@ -1059,11 +1228,14 @@ void Renderer::createCommandBuffers(){
 
         vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
         VkBuffer vertexBuffers[] = {vertexBuffer};
+        VkBuffer bgBuffers[] = {bgBuffer};
         VkDeviceSize offsets[] = {0};
-        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, bgBuffers, offsets);
         vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
         vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
-        vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(bg_indices.size()), 1, 0, 0, 0);
+        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+        vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, static_cast<uint32_t>(bg_indices.size()), 0, 0);
 
         vkCmdEndRenderPass(commandBuffers[i]);
         
@@ -1161,6 +1333,40 @@ void Renderer::createDepthResources() {
     
 }
 
+void Renderer::setCamera(){
+    cameraPos = glm::vec3(1.0f,0.0f,0.0f);
+    cameraUp = glm::vec3(0.0f,1.0f,0.0f);
+    cameraRight = glm::normalize(glm::cross(cameraPos,cameraUp));
+}
+
+glm::vec3 Renderer::readNewCameraPos(std::string posAsString){
+    std::regex re = std::regex("([0-9.]+)+,?", std::regex::ECMAScript);
+    std::smatch matches;
+    std::regex_search(posAsString,matches,re);
+    unsigned int coordsGiven = 0;
+    glm::vec3 returnCoords = glm::vec3{0.0f,0.0f,0.0f};
+
+    while (std::regex_search(posAsString, matches, re))
+    {
+        coordsGiven++;
+        if(coordsGiven > 3){
+            std::cout << "Too many coordinates given, 3 coordinates max." << std::endl;
+            return glm::vec3{0.0f,0.0f,0.0f};
+        }
+
+        std::cout << matches[1] << std::endl;
+
+        returnCoords[coordsGiven - 1] = std::stod(matches[1]);
+
+        posAsString = matches.suffix().str();
+    }
+
+    std::cout << "fail" << std::endl;
+    return returnCoords;
+
+}   
+
+
 void Renderer::createSurface(){
     if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
         throw std::runtime_error("failed to create window surface!");
@@ -1220,7 +1426,6 @@ void Renderer::drawFrame() {
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
