@@ -1,0 +1,75 @@
+Things that need to be happening
+	- Resource handling
+		- Textures/Models for rendering engine
+		- Object states for logic and physics engine
+		- Audio files for audio engine
+		- Various configuration files (GUI, graphics settings, etc) used at initialization and program finish
+	- Audio handling
+	- Graphics handling
+	- User interfacing
+	- Physics handling
+		- Collission detection
+	- Game logic
+	- (Multithreading)
+
+Basic event examples
+
+Window resize
+	GLFW event -> Core 	-> Submodule
+A user clicks on an area in the game world
+	GLFW event -> Core 	-> Submodule
+A user clicks on a GUI element
+	(Which module is responsible for creating and managing GUI?)
+	GLFW event -> Core 	-> Submodule
+A user changes a setting
+	Submodule -> Core -> Submodule
+Time passes in game
+	(Should be called after each loop)
+	Core -> Submodule
+Current time required by a module
+	Submodule -> Core -> Submodule
+AI makes a decision
+	Submodule -> Core -> Submodule
+A user presses a keyboard button
+	GLFW event -> Core [-> Submodule]
+Two units attack eachother
+	Submodule -> Core -> Submodule
+A new scene finished rendering
+	Render module -> Core
+A unit has been created
+	Submodule -> Core -> Submodule
+Game save
+	Submodule -> Core -> Submodule
+Game load
+	Submodule -> Core -> Submodule
+
+
+Basic engine concept
+GLFW interfaces with OS
+	- Events polled are sent to Core
+Core:
+	- Sends relevant events to their respective modules
+		- For example a button press depending on bound action can be passed to game logic or physics engine
+		- Resizing events etc only required by graphics engine
+	Core event handler:
+		- Handles Submodule queues
+		- Handles Starting / Stopping submodules
+		
+Rendering engine:
+	Tasks:
+		- Handles 
+		- Handles Graphic card memory
+			- Loading shaders
+			- Loading meshes
+			- Updating buffers
+		- Handles the rendering process
+			- Creating pipeline
+			- Setting up command buffers
+			- Handling render passes
+			
+	Communication with core:
+		- Semaphores: Current rendering state [In progress/Not in progress]
+		- On signal from Core, starts the rendering process
+		- After rendering process sends signal to Core
+	
+		

@@ -26,7 +26,7 @@
 
 /****
  * 
- * STRUCT DEFINITIONS
+ * STRUCT DEFINITIONS   
  * NON VULKAN ONLY
  * 
 ****/

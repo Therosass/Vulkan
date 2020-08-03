@@ -13,7 +13,7 @@ set( ENV{Vulkan} "C:/VulkanSDK/1.2.141.0/Lib32/")
 project(Tutorial)
 
 # add the executable
-add_executable(main ./src/main.cpp ./src/renderer.cpp)
+add_executable(main ./src/main.cpp ./src/renderer.cpp keyHandler.cpp)
 target_compile_features(main PRIVATE cxx_std_17)
 
 # includes
@@ -23,6 +23,7 @@ include_directories("libs/headers/tinyobjloader")
 include_directories("headers")
 include_directories("src")
 include_directories("C:/VulkanSDK/1.2.141.0/Include/")
+include_directories("C:/boost_1_73_0/")
 
 #libs
 add_library(glfw STATIC IMPORTED)
@@ -39,12 +40,13 @@ set_property(TARGET tiny PROPERTY IMPORTED_LOCATION "$ENV{TINY}/libtinyobjloader
 target_link_libraries(main glfw)
 target_link_libraries(main vulkan)
 
-# copy libs
+# copy libs and files
 
+#models and textures
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/textures/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/textures/)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/models/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/models/)
 
-
+#libs
 add_custom_command ( TARGET main POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     $<TARGET_FILE:glfw> $<TARGET_FILE_DIR:main>
@@ -59,3 +61,6 @@ add_custom_command ( TARGET main POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     $<TARGET_FILE:tiny> $<TARGET_FILE_DIR:main>
 )
+
+#config files
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/config/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/config/)
