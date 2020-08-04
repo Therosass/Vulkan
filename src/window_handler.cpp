@@ -2,6 +2,10 @@
 
 #include "core.h"
 
+WindowHandler::WindowHandler(){
+    this->moduleRole = MODULES::WINDOW;
+}
+
 void WindowHandler::error_callback(int error, const char* description)
 {
     fprintf(stderr, "Error: %s\n", description);
@@ -9,7 +13,7 @@ void WindowHandler::error_callback(int error, const char* description)
 
 void WindowHandler::mouse_callback(GLFWwindow* window, double xPos, double yPos){
     
-	/*
+    /*
 	*
 	*	TO BE MOVED AND REWORKED
 	*
@@ -154,10 +158,12 @@ GLFWwindow* WindowHandler::getWindow(){
 	return window;
 }
 
+
 void WindowHandler::getWindowEvents(){
 	glfwPollEvents();
 	if(windowResizedFlag){
 		sendMessageSync(EVENTS::WINDOW_RESIZE, MODULES::RENDERER, engineCore);
+	    windowResizedFlag = false;
 	}
 
 }
@@ -173,7 +179,7 @@ void WindowHandler::initGLFW(){
 	window = glfwCreateWindow(WIDTH, HEIGHT, "Vulcanicus", NULL, NULL);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     if (glfwRawMouseMotionSupported()){
         //glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
         glfwSetCursorPosCallback(window, mouse_callback);

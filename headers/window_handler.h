@@ -6,13 +6,12 @@ class Core;
 #include "GLFW/glfw3.h"
 
 
-
-
 #include "module.h"
 
 
 class WindowHandler : public Module{
 public:
+    WindowHandler();
     ~WindowHandler(){};
     void start(Core* engineCore);
     GLFWwindow* getWindow();

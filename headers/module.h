@@ -6,6 +6,7 @@
 #include <optional>
 
 #define DEBUG_MODE_RENDERER
+#define DEBUG_MODE_MODULE
 
 enum MODULES{
     CORE = 0x00000000,
@@ -36,9 +37,11 @@ struct Message{
 class Module{
 public:
     virtual ~Module(){};
-
     virtual void receiveMessage() = 0;
     virtual void sendMessageSync(EVENTS event, MODULES targetModule, Module* messageHandler, std::string message = "");
+#ifdef DEBUG_MODE_MODULE
+    virtual void printMessage(Message msg);
+#endif
 
 protected:
     enum MODULES moduleRole;

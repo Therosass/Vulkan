@@ -1,4 +1,9 @@
 #include "core.h"
+#include <iostream>
+
+Core::Core(){
+    this->moduleRole == MODULES::CORE;
+}
 
 void Core::run(){
     startModule(WINDOW);
@@ -35,12 +40,15 @@ void Core::startModule(MODULES module){
 }
 
 void Core::receiveMessage(){
-    for(auto message : messageQueue){
-        switch(message.srcModule){
+    std::list<Message>::iterator message = messageQueue.begin();
+    while(message != messageQueue.end()){
+        printMessage(*message);
+        switch(message->srcModule){
             case MODULES::WINDOW:
-            switch(message.dstModule){
+            switch(message->relatedEvent){
                 case EVENTS::WINDOW_RESIZE:
                     if(renderer){
+                        std::cout << "window resize";
                         sendMessageSync(EVENTS::WINDOW_RESIZE, MODULES::RENDERER, renderer);
                     }
                 break;
@@ -53,5 +61,6 @@ void Core::receiveMessage(){
             default:
             break;
         }
+        message = messageQueue.erase(message);
     }
 }

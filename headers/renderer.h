@@ -146,6 +146,7 @@ class Renderer : public Module{
 public:
     void start(Core* engineCore, GLFWwindow* window);
     void renderFrame();
+    Renderer();
     ~Renderer();
 
 private:
@@ -159,7 +160,7 @@ private:
     GLFW window handling
 */  
     GLFWwindow* window = nullptr;
-    bool windowResizedFlag = false;
+    bool windowResizedFlag = true;
     void cleanup();
 
 

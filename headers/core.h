@@ -9,6 +9,7 @@
 
 class Core : public Module{
 public:
+    Core();
     ~Core(){};
     std::pair<int,int> getCurrentWindowSize();
     void run();

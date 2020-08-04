@@ -52,6 +52,10 @@ void Renderer::renderFrame(){
     drawFrame();
 }
 
+Renderer::Renderer(){
+    this->moduleRole == MODULES::RENDERER;
+}
+
 Renderer::~Renderer(){
 	vkDeviceWaitIdle(device);
     cleanup();
@@ -1090,8 +1094,8 @@ void Renderer::createCommandBuffers(){
         vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
         vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
         vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(bg_indices.size()), 1, 0, 0, 0);
-        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
-        vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, static_cast<uint32_t>(bg_indices.size()), 0, 0);
+        //vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+        //vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, static_cast<uint32_t>(bg_indices.size()), 0, 0);
 
         vkCmdEndRenderPass(commandBuffers[i]);
         
@@ -1190,9 +1194,10 @@ void Renderer::createDepthResources() {
 }
 
 void Renderer::setCamera(){
-    cameraPos = glm::vec3(1.0f,0.0f,0.0f);
+    cameraPos = glm::vec3(3.0f,0.0f,0.0f);
     cameraUp = glm::vec3(0.0f,1.0f,0.0f);
     cameraRight = glm::normalize(glm::cross(cameraPos,cameraUp));
+    lookPos = glm::vec3(0.0f,0.0f,0.0f);
 }
 
 glm::vec3 Renderer::readNewCameraPos(std::string posAsString){
@@ -1602,10 +1607,11 @@ void Renderer::loadModel() {
 }
 
 void Renderer::receiveMessage(){
-    for(auto message : messageQueue){
-        switch(message.srcModule){
+    std::list<Message>::iterator message = messageQueue.begin();
+    while(message != messageQueue.end()){  
+        switch(message->srcModule){
             case MODULES::WINDOW:
-            switch(message.relatedEvent){
+            switch(message->relatedEvent){
                 case EVENTS::WINDOW_RESIZE:
                     this->windowResizedFlag = true;
                 break;
@@ -1619,4 +1625,5 @@ void Renderer::receiveMessage(){
             break;
         }
     }
+    message = messageQueue.erase(message);
 }
