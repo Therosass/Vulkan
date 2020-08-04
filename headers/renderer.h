@@ -1,13 +1,8 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#define GLFW_INCLUDE_VULKAN
+#include <vulkan/vulkan.hpp>
 #include "GLFW/glfw3.h"
-
-
-
-#include "keyHandler.h"
-
 
 #define GLM_ENABLE_EXPERIMENTAL
 #define GLM_FORCE_RADIANS
@@ -23,6 +18,16 @@
 #include <array>
 #include <fstream>
 #include <unordered_map>
+
+#include "module.h"
+
+/****
+ * 
+ * FORWARD DECLARATIONS
+ * 
+****/
+
+class Core;
 
 /****
  * 
@@ -94,8 +99,6 @@ struct UniformBufferObject {
  * 
 ****/
 
-const uint32_t WIDTH = 800;
-const uint32_t HEIGHT = 600;
 
 const std::string MODEL_PATH = "models/viking.obj";
 const std::string TEXTURE_PATH = "textures/viking.png";
@@ -131,22 +134,34 @@ struct SwapChainSupportDetails {
     std::vector<VkPresentModeKHR> presentModes;
 };
 
-class Renderer{
+
+
+
+
+
+
+
+
+class Renderer : public Module{
 public:
-    void run();
+    void start(Core* engineCore, GLFWwindow* window);
+    void renderFrame();
+    ~Renderer();
+
 private:
 
-    static bool lbutton_down;
+/*
+    Engine core functions
+*/
+    Core* engineCore;
 
 /*
-    GLFW window creation
+    GLFW window handling
 */  
     GLFWwindow* window = nullptr;
-    void initGLFW();
+    bool windowResizedFlag = false;
     void cleanup();
-    static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
-    static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-    static void mouse_callback(GLFWwindow* window, double xPos, double yPos);
+
 
 /*
     Vulkan objects
@@ -320,6 +335,14 @@ private:
     static glm::vec3 readNewCameraPos(std::string posAsString);
 
     void loadModel();
+
+/*****
+ * 
+ * Module function implementation
+ * 
+ ****/
+
+    void receiveMessage() override;
 };
 
 #endif

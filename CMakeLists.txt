@@ -13,7 +13,7 @@ set( ENV{Vulkan} "C:/VulkanSDK/1.2.141.0/Lib32/")
 project(Tutorial)
 
 # add the executable
-add_executable(main ./src/main.cpp ./src/renderer.cpp keyHandler.cpp)
+add_executable(main ./src/main.cpp ./src/renderer.cpp ./src/window_handler.cpp ./src/core.cpp ./src/module.cpp)
 target_compile_features(main PRIVATE cxx_std_17)
 
 # includes
@@ -22,7 +22,7 @@ include_directories("libs/headers/stb")
 include_directories("libs/headers/tinyobjloader")
 include_directories("headers")
 include_directories("src")
-include_directories("C:/VulkanSDK/1.2.141.0/Include/")
+include_directories("C:/VulkanSDK/1.2.148.0/Include/")
 include_directories("C:/boost_1_73_0/")
 
 #libs

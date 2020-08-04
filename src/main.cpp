@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include "renderer.h"
+#include "core.h"
 
 
 int main(int arg, char** args){
-	Renderer renderer;
-	renderer.run();
+	Core engine;
+	engine.run();
 }
