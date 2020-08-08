@@ -2,7 +2,9 @@
 #include <iostream>
 
 Core::Core(){
-    this->moduleRole == MODULES::CORE;
+    this->moduleRole = MODULES::CORE;
+    this->coreModule = this;
+    this->msgHandler = new MessageHandler;
 }
 
 void Core::run(){
@@ -13,6 +15,7 @@ void Core::run(){
         getWindowEvents();
         receiveMessage();
         renderer->renderFrame();
+        cv->notify_one();
 	}
 }
 
@@ -29,10 +32,12 @@ void Core::startModule(MODULES module){
         case MODULES::WINDOW:
             windowHandler = new WindowHandler();
             windowHandler->start(this);
+            msgHandler->registerModule(windowHandler);
             break;
         case MODULES::RENDERER:
             renderer = new Renderer();
             renderer->start(this,windowHandler->getWindow());
+            msgHandler->registerModule(renderer);
             break;
         default:
             break;
@@ -40,8 +45,9 @@ void Core::startModule(MODULES module){
 }
 
 void Core::receiveMessage(){
-    std::list<Message>::iterator message = messageQueue.begin();
-    while(message != messageQueue.end()){
+    /*
+    std::list<Message>::iterator message = receiveQueue.begin();
+    while(message != receiveQueue.end()){
         printMessage(*message);
         switch(message->srcModule){
             case MODULES::WINDOW:
@@ -53,6 +59,16 @@ void Core::receiveMessage(){
                     }
                 break;
 
+                case EVENTS::CURSOR_MOVE:
+                    DataPacket<std::pair<int,int>> test = receiveData<std::pair<int,int>>(message->dataPacketID);
+                    currentMousePos = DataPacket<std::pair<int,int>> 
+
+                break;
+
+                case EVENTS::KEYBOARD_EVENT:
+                break;
+
+
                 default:
                 break;
             }
@@ -62,5 +78,5 @@ void Core::receiveMessage(){
             break;
         }
         message = messageQueue.erase(message);
-    }
+    }*/
 }

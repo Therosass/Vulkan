@@ -11,6 +11,12 @@ Things that need to be happening
 		- Collission detection
 	- Game logic
 	- (Multithreading)
+	
+Message Handler example:
+
+Module: GLFW window handler -> Core								-> Renderer
+Event: 	Mouse movement 		-> Get new mouse position(int,int)	-> Get new mouse position(int,int)
+
 
 Basic event examples
 
@@ -66,7 +72,6 @@ Rendering engine:
 			- Creating pipeline
 			- Setting up command buffers
 			- Handling render passes
-			
 	Communication with core:
 		- Semaphores: Current rendering state [In progress/Not in progress]
 		- On signal from Core, starts the rendering process

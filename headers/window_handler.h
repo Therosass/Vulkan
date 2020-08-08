@@ -5,7 +5,6 @@ class Core;
 
 #include "GLFW/glfw3.h"
 
-
 #include "module.h"
 
 
@@ -16,6 +15,8 @@ public:
     void start(Core* engineCore);
     GLFWwindow* getWindow();
     void getWindowEvents();
+    std::pair<int,int> getCurrentMousePos();
+    void setCurrentMousePos(std::pair<int,int> newMousePos);
 protected:
 private:
     Core* engineCore;
@@ -24,6 +25,7 @@ private:
     uint32_t WIDTH = 800;
     uint32_t HEIGHT = 600;    
     bool windowResizedFlag = false;
+    std::pair<int,int> currentMousePos;
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
     static void error_callback(int error, const char* description);
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);

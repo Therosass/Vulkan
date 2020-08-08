@@ -1,7 +1,7 @@
 #include "renderer.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include <stb/stb_image.h>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
@@ -1607,23 +1607,23 @@ void Renderer::loadModel() {
 }
 
 void Renderer::receiveMessage(){
-    std::list<Message>::iterator message = messageQueue.begin();
-    while(message != messageQueue.end()){  
-        switch(message->srcModule){
-            case MODULES::WINDOW:
-            switch(message->relatedEvent){
-                case EVENTS::WINDOW_RESIZE:
-                    this->windowResizedFlag = true;
-                break;
-                
-                default:
-                break;
-            }
-            break;
-
-            default:
-            break;
-        }
-    }
-    message = messageQueue.erase(message);
+    //std::list<Message>::iterator message = receiveQueue.begin();
+    //while(message != receiveQueue.end()){  
+    //    switch(message->srcModule){
+    //        case MODULES::WINDOW:
+    //        switch(message->relatedEvent){
+    //            case EVENTS::WINDOW_RESIZE:
+    //                this->windowResizedFlag = true;
+    //            break;
+    //            
+    //            default:
+    //            break;
+    //        }
+    //        break;
+    //
+    //        default:
+    //        break;
+    //    }
+    //}
+    //message = messageQueue.erase(message);
 }

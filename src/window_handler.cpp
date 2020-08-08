@@ -162,12 +162,19 @@ GLFWwindow* WindowHandler::getWindow(){
 void WindowHandler::getWindowEvents(){
 	glfwPollEvents();
 	if(windowResizedFlag){
-		sendMessageSync(EVENTS::WINDOW_RESIZE, MODULES::RENDERER, engineCore);
+		sendMessage(EVENTS::WINDOW_RESIZE, MODULES::RENDERER);
 	    windowResizedFlag = false;
 	}
 
 }
 
+std::pair<int,int> WindowHandler::getCurrentMousePos(){
+    return currentMousePos;
+}
+
+void WindowHandler::setCurrentMousePos(std::pair<int,int> newMousePos){
+    currentMousePos = newMousePos;
+}
 
 
 void WindowHandler::initGLFW(){
@@ -179,7 +186,7 @@ void WindowHandler::initGLFW(){
 	window = glfwCreateWindow(WIDTH, HEIGHT, "Vulcanicus", NULL, NULL);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     if (glfwRawMouseMotionSupported()){
         //glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
         glfwSetCursorPosCallback(window, mouse_callback);

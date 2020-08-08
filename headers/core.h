@@ -1,7 +1,7 @@
 #ifndef CORE_H
 #define CORE_H
 
-#include "module.h"
+#include "messageHandler.h"
 #include "window_handler.h"
 #include "renderer.h"
 //#include "keyHandler.h"
@@ -13,6 +13,7 @@ public:
     ~Core(){};
     std::pair<int,int> getCurrentWindowSize();
     void run();
+
 protected:
 
 private:
@@ -21,15 +22,17 @@ private:
     void getWindowEvents();
     void startModule(MODULES module);
     void initGLFW();
+    std::pair<int,int> currentMousePos;
     int currentWindowHeight;
     int currentWindowWidth;
 
 /*****
  * 
- * Module function implementation
+ * Module|MessageHandling implementation
  * 
  ****/
 
+    MessageHandler* msgHandler;
     void receiveMessage() override;
 };
 
