@@ -12,7 +12,7 @@ class WindowHandler : public Module{
 public:
     WindowHandler();
     ~WindowHandler(){};
-    void start(Core* engineCore);
+    void init(Core* engineCore);
     GLFWwindow* getWindow();
     void getWindowEvents();
     std::pair<int,int> getCurrentMousePos();

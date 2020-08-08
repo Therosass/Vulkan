@@ -2,13 +2,13 @@
 
 void Module::sendMessage(EVENTS event, MODULES targetModule, std::string message){
     boost::lock_guard<boost::mutex> lock(readGuard);
-    Message messageToSend;
-    messageToSend.srcModule = this->moduleRole;
-    messageToSend.dstModule = targetModule;
-    messageToSend.relatedEvent = event;
-    messageToSend.messageText = message;
-    printMessage(messageToSend);
-    sendQueue.push(&messageToSend);
+    Message* messageToSend = new Message;
+    messageToSend->srcModule = moduleRole;
+    messageToSend->dstModule = targetModule;
+    messageToSend->relatedEvent = event;
+    messageToSend->messageText = message;
+    printMessage(*messageToSend);
+    sendQueue.push(messageToSend);
     cv->notify_one();
 }
 

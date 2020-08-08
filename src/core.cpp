@@ -12,12 +12,16 @@ Core::Core(){
 void Core::run(){
     startModule(WINDOW);
     startModule(RENDERER);
+    std::cout << "initalized with" << std::endl 
+            << "core: " << this << std::endl 
+            << "msgHandler: " << this->msgHandler << std::endl 
+            << "windowHandler: " << this->windowHandler << std::endl 
+            << "renderer: " << this->renderer << std::endl; 
 	while (!glfwWindowShouldClose(windowHandler->getWindow()))
     {
         getWindowEvents();
         receiveMessage();
         renderer->renderFrame();
-        cv->notify_one();
 	}
 }
 
@@ -33,12 +37,14 @@ void Core::startModule(MODULES module){
     switch(module){
         case MODULES::WINDOW:
             windowHandler = new WindowHandler();
-            windowHandler->start(this);
+            windowHandler->init(this);
+            std::cout << "window pointer: " << windowHandler << std::endl;
             msgHandler->registerModule(windowHandler);
             break;
         case MODULES::RENDERER:
             renderer = new Renderer();
             renderer->start(this,windowHandler->getWindow());
+            std::cout << "renderer pointer: " << renderer << std::endl;
             msgHandler->registerModule(renderer);
             break;
         default:

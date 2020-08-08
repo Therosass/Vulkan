@@ -9,6 +9,9 @@ static bool newMessageEvent = false;
 class MessageHandler : public Module{
 public:
 
+    MessageHandler(){
+        moduleRole = MODULES::MESSAGEHANDLER;
+    };
     void receiveMessage(){};
     void registerModule(Module* moduleToRegister);
     void moveMessages();

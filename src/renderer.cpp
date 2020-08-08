@@ -39,9 +39,8 @@ static double YP = 0;
 void Renderer::start(Core* engineCore, GLFWwindow* window){
     this->window = window;
     this->engineCore = engineCore;
-    std::cout << "initialized with\nwindow: " << this->window << "\nenginecore: " << this->engineCore << std::endl;
     if(!window || !engineCore){
-        throw std::runtime_error("Graphics engine has no engine core or window.");
+        throw std::runtime_error("Graphics engine was constructed with no engine core or window.");
     }
     initVulkan();
 
@@ -53,7 +52,7 @@ void Renderer::renderFrame(){
 }
 
 Renderer::Renderer(){
-    this->moduleRole == MODULES::RENDERER;
+    this->moduleRole = MODULES::RENDERER;
 }
 
 Renderer::~Renderer(){

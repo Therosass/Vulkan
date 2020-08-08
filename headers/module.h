@@ -11,6 +11,8 @@
 #include <boost/thread/lock_guard.hpp>
 #include <boost/thread/condition_variable.hpp>
 
+#include <iostream>
+
 #define DEBUG_MODE_RENDERER
 #define DEBUG_MODE_MODULE
 
@@ -39,7 +41,8 @@ enum ERRORCODES{
 enum MODULES{
     CORE = 0x00000000,
     WINDOW = 0x00000001,
-    RENDERER = 0x00000002
+    RENDERER = 0x00000002,
+    MESSAGEHANDLER = 0x000000003
 };
 
 enum EVENTS{
@@ -102,18 +105,26 @@ public:
     Message* getNextMesage(){
         boost::lock_guard<boost::mutex> lock(readGuard);
         if(sendQueue.empty()){
+            std::cout << moduleRole  << " Empty queue" << std::endl;
             return nullptr;
         }
+        std::cout << moduleRole  << " Returning msg" << std::endl;
         Message* nextMessage = sendQueue.front();
+        sendQueue.pop();
         return nextMessage;
     }
 
     void receiveMessage(Message* message){
+        std::cout << "Message trieded to placed" << std::endl;
         boost::lock_guard<boost::mutex> lock(writeGuard);
         receiveQueue.push(message);
     }
 
     enum MODULES getModuleRole(){
+        if(moduleRole > 3 || moduleRole < 0){
+            std::cout << this << " " << moduleRole << std::endl;
+            throw std::runtime_error("moduleRole not set properly");
+        }
         return moduleRole;
     }
 
@@ -140,7 +151,6 @@ protected:
     enum MODULES moduleRole;
     Module* coreModule = nullptr;
 
-    boost::mutex PacketIDLock;
     boost::mutex readGuard;
     boost::mutex writeGuard;
 
@@ -148,7 +158,7 @@ protected:
     std::queue<Message*> receiveQueue;
 
     int getNewPacketID(){
-        boost::lock_guard<boost::mutex> lock(PacketIDLock);
+        boost::lock_guard<boost::mutex> lock(writeGuard);
         currentPacketID++;
         return currentPacketID;
     };

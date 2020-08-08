@@ -149,7 +149,7 @@ void WindowHandler::key_callback(GLFWwindow* window, int key, int scancode, int 
 }
 
 
-void WindowHandler::start(Core* engineCore){
+void WindowHandler::init(Core* engineCore){
 	this->engineCore = engineCore;
 	initGLFW();
 }
