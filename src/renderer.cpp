@@ -1302,7 +1302,7 @@ void Renderer::drawFrame() {
         framebufferResized = false;
         recreateSwapChain();
         #ifdef DEBUG_MESSAGES_RENDERER
-            sendMessageSync(EVENTS::WINDOW_RESIZE_SUCCESSFUL, MODULES::CORE, engineCore);
+            sendMessage(EVENTS::WINDOW_RESIZE_SUCCESSFUL, MODULES::CORE);
         #endif
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("failed to present swap chain image!");

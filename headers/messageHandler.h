@@ -13,6 +13,7 @@ public:
     void registerModule(Module* moduleToRegister);
     void moveMessages();
     void checkNewMessage();
+    boost::condition_variable* getConditionVariablePtr();
 
     void run();
 

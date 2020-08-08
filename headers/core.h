@@ -4,6 +4,7 @@
 #include "messageHandler.h"
 #include "window_handler.h"
 #include "renderer.h"
+#include <boost/thread.hpp>
 //#include "keyHandler.h"
 
 
@@ -33,6 +34,7 @@ private:
  ****/
 
     MessageHandler* msgHandler;
+    boost::thread* message_thread;
     void receiveMessage() override;
 };
 

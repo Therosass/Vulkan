@@ -5,6 +5,8 @@ Core::Core(){
     this->moduleRole = MODULES::CORE;
     this->coreModule = this;
     this->msgHandler = new MessageHandler;
+    cv = msgHandler->getConditionVariablePtr();
+    message_thread = new boost::thread(&MessageHandler::run, msgHandler);
 }
 
 void Core::run(){
