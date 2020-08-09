@@ -49,6 +49,7 @@ void Renderer::start(Core* engineCore, GLFWwindow* window){
 
 void Renderer::renderFrame(){
     drawFrame();
+    receiveMessage();
 }
 
 Renderer::Renderer(){
@@ -1606,23 +1607,30 @@ void Renderer::loadModel() {
 }
 
 void Renderer::receiveMessage(){
-    //std::list<Message>::iterator message = receiveQueue.begin();
-    //while(message != receiveQueue.end()){  
-    //    switch(message->srcModule){
-    //        case MODULES::WINDOW:
-    //        switch(message->relatedEvent){
-    //            case EVENTS::WINDOW_RESIZE:
-    //                this->windowResizedFlag = true;
-    //            break;
-    //            
-    //            default:
-    //            break;
-    //        }
-    //        break;
-    //
-    //        default:
-    //        break;
-    //    }
-    //}
-    //message = messageQueue.erase(message);
+    while(auto message = readNextMessage()){
+        switch(message->srcModule){
+            case MODULES::WINDOW:
+            switch(message->relatedEvent){
+                case EVENTS::WINDOW_RESIZE:
+                {
+                    std::pair<int,int>* windowSize = static_cast<std::pair<int,int>*>(message->dataPacket->data);
+                    //std::cout << "Packet Data ptr: " << message->dataPacket->data << std::endl;
+                    //std::cout << "New window size is" << std::endl <<
+                    //                "width: " << windowSize->first << std::endl <<
+                    //                "height: " << windowSize->second <<std::endl;
+                    delete windowSize;
+                    this->windowResizedFlag = true;
+                }
+                break;
+
+                default:
+                break;
+            }
+            break;
+    
+            default:
+            break;
+        }
+        delete message;
+    }
 }

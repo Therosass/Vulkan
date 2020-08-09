@@ -22,8 +22,8 @@ private:
     Core* engineCore;
     GLFWwindow* window;
     void initGLFW();
-    uint32_t WIDTH = 800;
-    uint32_t HEIGHT = 600;    
+    int windowWidth = 800;
+    int windowHeight = 600;    
     bool windowResizedFlag = false;
     std::pair<int,int> currentMousePos;
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);

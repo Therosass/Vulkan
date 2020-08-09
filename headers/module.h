@@ -76,13 +76,18 @@ public:
     template <class T>
     DataPacket createDataPacket(T* data, enum DATATYPES dataType = DATATYPES::UNKNOWN_TYPE){
         //static::assert((boost::is_pointer<T>,"createDataPacket can only be instantiated with a pointer type!"));
-        auto copyOfData = new T();
-        copyOfData = data;
+        auto copyOfData = new T(*data);
         
         DataPacket newPacket;
         newPacket.dataType = dataType;
         newPacket.length = sizeof(*data)/sizeof(data);
         newPacket.data = (void*)copyOfData; 
+
+        //std::cout << "Data packet created" << std::endl <<
+        //            "Data type: " << newPacket.dataType << std::endl <<
+        //            "Data size: " << newPacket.length << std::endl <<
+        //            "Data: " << static_cast<std::pair<int,int>*>(newPacket.data)->first << ":" << static_cast<std::pair<int,int>*>(newPacket.data)->second << std::endl <<
+        //            "Data pointer: " << newPacket.data << std::endl;
 
         return newPacket;
     };
@@ -90,41 +95,54 @@ public:
     virtual ~Module(){};
     virtual void receiveMessage() = 0;
     
+    /*
+    *   sendDataPacket:
+    *   Places a message with a DataPacket into the sendqueue
+    *   The Datapacket contains a pointer to the copy of the data to be sent
+    *
+    */
+
     template <class T>
     void sendDataPacket(EVENTS event, MODULES targetModule, T dataToSend, std::string message = "", enum DATATYPES dataType = DATATYPES::UNKNOWN_TYPE){
         DataPacket newPacket = createDataPacket(std::addressof(dataToSend),dataType);
-        Message newMessage = Message();
-        newMessage.srcModule = moduleRole;
-        newMessage.dstModule = targetModule;
-        newMessage.dataPacket = newPacket;
-        newMessage.relatedEvent = event;
+        Message* messageToSend = new Message;
+        messageToSend->srcModule = moduleRole;
+        messageToSend->dstModule = targetModule;
+        messageToSend->dataPacket = newPacket;
+        messageToSend->relatedEvent = event;
+        messageToSend->messageText = message;
+        sendQueue.push(messageToSend);
+        cv->notify_one();
     };
 
     virtual void sendMessage(EVENTS event, MODULES targetModule, std::string message = "");
 
-    Message* getNextMesage(){
+    Message* getNextMesage(){ //Used by MessageHandler to receive an element from sendQueue
         boost::lock_guard<boost::mutex> lock(readGuard);
         if(sendQueue.empty()){
-            std::cout << moduleRole  << " Empty queue" << std::endl;
             return nullptr;
         }
-        std::cout << moduleRole  << " Returning msg" << std::endl;
         Message* nextMessage = sendQueue.front();
         sendQueue.pop();
         return nextMessage;
     }
 
-    void receiveMessage(Message* message){
-        std::cout << "Message trieded to placed" << std::endl;
+    void receiveMessage(Message* message){ //Used by MessageHandler to send a new message to receiveQueue
         boost::lock_guard<boost::mutex> lock(writeGuard);
         receiveQueue.push(message);
     }
 
-    enum MODULES getModuleRole(){
-        if(moduleRole > 3 || moduleRole < 0){
-            std::cout << this << " " << moduleRole << std::endl;
-            throw std::runtime_error("moduleRole not set properly");
+    Message* readNextMessage(){ //Get next message from receiveQueue
+        boost::lock_guard<boost::mutex> lock(writeGuard);
+        if(receiveQueue.empty()){
+            return nullptr;
         }
+        Message* newMsg = receiveQueue.front();
+        receiveQueue.pop();
+        return newMsg;
+    }
+
+    enum MODULES getModuleRole(){
         return moduleRole;
     }
 

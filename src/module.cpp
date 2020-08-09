@@ -19,6 +19,9 @@ void Module::printMessage(Message msg){
                 << "Message dest: " << msg.dstModule << std::endl
                 << "Message event: " << msg.relatedEvent << std::endl
                 << "Message text: " << msg.messageText << std::endl
+                << "Is data: " << (msg.dataPacket.has_value()?"True":"False") << std::endl
                 << "Is error: " << (msg.errorCode.has_value()?"True":"False") << std::endl;
 }
+
+    
 #endif

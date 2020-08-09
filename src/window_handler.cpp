@@ -162,7 +162,9 @@ GLFWwindow* WindowHandler::getWindow(){
 void WindowHandler::getWindowEvents(){
 	glfwPollEvents();
 	if(windowResizedFlag){
-		sendMessage(EVENTS::WINDOW_RESIZE, MODULES::RENDERER);
+        glfwGetWindowSize(window, &windowWidth, &windowHeight);
+        std::cout << "window size is: " << windowWidth << ":" << windowHeight << std::endl;
+        sendDataPacket(EVENTS::WINDOW_RESIZE, MODULES::RENDERER, std::pair<int,int>(100,150));
 	    windowResizedFlag = false;
 	}
 
@@ -183,7 +185,7 @@ void WindowHandler::initGLFW(){
 	}
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwSetErrorCallback(error_callback);
-	window = glfwCreateWindow(WIDTH, HEIGHT, "Vulcanicus", NULL, NULL);
+	window = glfwCreateWindow(windowWidth, windowHeight, "Vulcanicus", NULL, NULL);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -202,6 +204,8 @@ void WindowHandler::initGLFW(){
 void WindowHandler::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
 	auto app = reinterpret_cast<WindowHandler*>(glfwGetWindowUserPointer(window));
 	app->windowResizedFlag = true;
+    app->windowWidth = width;
+    app->windowHeight = height;
 }
 
 
