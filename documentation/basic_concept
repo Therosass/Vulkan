@@ -5,61 +5,224 @@ Things that need to be happening
 		- Audio files for audio engine
 		- Various configuration files (GUI, graphics settings, etc) used at initialization and program finish
 	- Audio handling
+	+ Message handling
 	- Graphics handling
-	- User interfacing
+	- User interfacing (Menus,buttons, handling input devices etc)
 	- Physics handling
 		- Collission detection
 	- Game logic
 	- (Multithreading)
 	
-Message Handler example:
+*
+*	MESSAGES AND EVENTS
+*
+	
+Message Handler:
+
+Usage:
+	To send and receive messages the new module must be derived from the Module class defined in Module.h.
+	The object must be registered at the MessageHandler object, to do this the object must receive the conditional variable from the MessageHandler,
+	it also has to have set itself a moduleRole, which must be from the enum MODULES defined in module.h, this can be expanded as needed.
+	
+	To process messages the receiveMessage() pure virtual function must be implemented in the class.
+	To get a new message that has been sent to this module use the readNextMessage() function.
+	
+	To send new messages to modules, the sendMessage() or sendDataPacket() functions can be used depending on whether we will be sending data along the event.
+	These 2 functions notify the MessageHandler that a new message has been sent.
+	
 
 Module: GLFW window handler -> Core								-> Renderer
 Event: 	Mouse movement 		-> Get new mouse position(int,int)	-> Get new mouse position(int,int)
+What we know based on event:
+	- The receiver and the sender (explicitly from message)
+	- The event related to the message
+	- The object will be of type T (this should be derived from handler-sender-event)
 
+What the job of the messageHandler:
+	Sender side:
+		- Place the object T into sendQueue
+		- Notify MessageHandler through condition variable
+		- Allocate new Memory for Message and optionally Data
+
+	MessageHandler:
+		- Wait until notified
+		- On notification check sendQueues of all registered Modules
+		- If new message found, move it to the target Module's receiveQueue
+	
+	Receiver side:
+		- Check for new messages depending on logic
+		- In case of Message with Data, cast the packet to the correct type based on Message information
+		- Delete Message and Data
+	
+
+Render engine interface:
+
+	Renderable base class maybe?
+
+Functions required:
+	- Generation of IDs for resources
+		Possible resources:
+			- Shaders
+			- Textures
+			- Models
+			- Uniform values
+	- Management of Graphics card memory
+		Possible events:
+			- Upload new data
+			- Update existing data
+			- Unload unused data
+	- Create and manage the render pipeline
+	- Change rendering pipeline based on settings
+	
+			
 
 Basic event examples
 
 Window resize
-	GLFW event -> Core 	-> Submodule
+	GLFW event -> Render Engine
 A user clicks on an area in the game world
-	GLFW event -> Core 	-> Submodule
+	GLFW event -> Submodule
 A user clicks on a GUI element
 	(Which module is responsible for creating and managing GUI?)
-	GLFW event -> Core 	-> Submodule
+	GLFW event-> Submodule
 A user changes a setting
-	Submodule -> Core -> Submodule
+	Submodule -> Submodule
 Time passes in game
 	(Should be called after each loop)
 	Core -> Submodule
 Current time required by a module
-	Submodule -> Core -> Submodule
+	Submodule -> Submodule
 AI makes a decision
-	Submodule -> Core -> Submodule
+	Submodule -> Submodule
 A user presses a keyboard button
-	GLFW event -> Core [-> Submodule]
+	GLFW event [-> Submodule]
 Two units attack eachother
-	Submodule -> Core -> Submodule
+	Submodule -> Submodule
 A new scene finished rendering
 	Render module -> Core
 A unit has been created
-	Submodule -> Core -> Submodule
+	Submodule -> Submodule
 Game save
-	Submodule -> Core -> Submodule
+	Submodule -> Submodule
 Game load
-	Submodule -> Core -> Submodule
+	Submodule -> Submodule
 
+*
+*	INPUT EVENT HANDLING
+*
+
+Submodule of window handler (this is because window handling module communicates with OS).
+
+This module is implemented as a static member due to glfw limitations.
+
+
+Tasks:
+	- Stores information about each key:
+		- Current key state (KEY_UP/KEY_DOWN)
+		- Event bound to key
+		- Optional: last keypress time
+	- After event polling messages shall be sent accordingly to the contents of a container that stores all currently held keys.
+
+Constists of 1 class
+
+class KeyHandler();
+
+public functions: 
+
+std::vector<std::pair<std::string,enum EVENTS>> getHeldKeys():
+	- returns currently held down keys and the events bound to them
+bool bindEventToKey(const char* button, enum EVENTS eventToBind, erroCode* errCode = nullptr):
+	- bind a new event to a key
+	- returns true on success false on failure
+	- optionally error cause can be retrieved via supplying an errorCode pointer
+		Error causes:
+		- key already bound
+		- unsupported event
+		- invalid key
+	
+
+*
+*	RESOURCES
+*
+
+namespace RenderingOptions:
+	- Contains all options that can be used while rendering an object
+	Supported options:
+		- Wireframe mode
+
+class Renderable:
+	- Represents an object that is renderable.
+	- Consists of a vertex array, an index array
+	- Contains extra rendering options, these are picked from the RenderingOptions namespace
+	- Can contain a texture array and/or a color array
+	- Contains information about shaders required
+	- Contains a bounding box
+	
+
+*
+*	RESOURCE LOADING AND MANAGEMENT
+*
+
+Events that need to be handled:
+A new map has to be loaded:
+	- Unloading of all the old unused objects
+	- Loading of all the new objects
+	- Building a SceneGraph
+
+During run:
+	- Load of a new object that is optional and/or rare
+	- Unload less used resources to free memory if needed
+	- Changing of SceneGraph
+	- Updating Uniforms
+	
+On program end:
+	- Free all allocated memory
+	- Possibly save SceneGraph to Disk
+
+References to loaded meshes are handled via a map using std::string as key.
+*
+*	CODE GENERATION OPTION: The map can be changed to an enum if we know all the models that can be loaded,
+*		seperate all references to objects to a header and namespace that can be used to generate code later.
+*
+*	Look up all calls to the function that handles loading objects and replace the std::string with the enum.
+*
+
+ResourceHandler:
+	This is part of the core module, and is accessed via messages to the core module.
+
+Tasks:
+	- Loading/unloading of resources upon SceneGraph instructions
+	- Loading resources from Disk into memory (shaders, meshes, textures)
+	- Creating unique IDs for objects
+	- Setting up GPU buffers and the map of resources
+
+
+SceneGraph
+	This is part of the core module, and is accessed via messages to the core module.
+
+Tasks:
+	- Loading/unloading of resources
+	- Creating a tree structure that contains a hierarchy of objects and their transformations
+	- Calling of render functions happens by traversing this tree
+
+Interface:
+	- add(Renderable):
+		
+
+
+*
+*	ENGINE CORE CONCEPT
+*
 
 Basic engine concept
 GLFW interfaces with OS
 	- Events polled are sent to Core
 Core:
-	- Sends relevant events to their respective modules
-		- For example a button press depending on bound action can be passed to game logic or physics engine
-		- Resizing events etc only required by graphics engine
-	Core event handler:
-		- Handles Submodule queues
-		- Handles Starting / Stopping submodules
+	MessageHandler:
+		- Sends relevant events to their respective modules
+		
+	- Handles Submodule queues???
+	- Handles Starting / Stopping submodules
 		
 Rendering engine:
 	Tasks:
