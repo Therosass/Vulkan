@@ -2,6 +2,10 @@
 
 #include "core.h"
 
+bool WindowHandler::forward = false;
+bool WindowHandler::backward = false;
+bool WindowHandler::reset = false;
+
 WindowHandler::WindowHandler(){
     this->moduleRole = MODULES::WINDOW;
 }
@@ -100,19 +104,15 @@ void WindowHandler::key_callback(GLFWwindow* window, int key, int scancode, int 
     //    cameraPos += cameraMov;
     //    lookPos += cameraMov;
     //}
-    //if(key == GLFW_KEY_S){
-//
-    //    auto cameraMov = glm::normalize(glm::vec3(cameraPos-lookPos));
-    //    cameraMov /= 10;
-    //    cameraPos += cameraMov;
-    //    lookPos += cameraMov;
-    //}
-    //if(key == GLFW_KEY_D){
-    //    auto cameraMov = -cameraRight;
-    //    cameraMov /= 10;
-    //    cameraPos += cameraMov;
-    //    lookPos += cameraMov;
-    //}
+    if(key == GLFW_KEY_W){
+        forward = true;
+    }
+    if(key == GLFW_KEY_S){
+        backward = true;
+    }
+    if(key == GLFW_KEY_R){
+        reset = true;
+    }
     //if(key == GLFW_KEY_SPACE){
     //    cameraPos = glm::vec3(1.0f,0.0f,0.0f);
     //    cameraUp = glm::vec3(0.0f,1.0f,0.0f);
@@ -167,7 +167,18 @@ void WindowHandler::getWindowEvents(){
         sendDataPacket(EVENTS::WINDOW_RESIZE, MODULES::RENDERER, std::pair<int,int>(100,150));
 	    windowResizedFlag = false;
 	}
-
+    if(WindowHandler::forward){
+        sendMessage(EVENTS::KEYBOARD_EVENT,MODULES::RENDERER,"w");
+        WindowHandler::forward = false;
+    }
+    if(WindowHandler::backward){
+        sendMessage(EVENTS::KEYBOARD_EVENT,MODULES::RENDERER,"s");
+        WindowHandler::backward = false;
+    }
+    if(WindowHandler::reset){
+        sendMessage(EVENTS::KEYBOARD_EVENT,MODULES::RENDERER,"r");
+        WindowHandler::reset = false;
+    }
 }
 
 std::pair<int,int> WindowHandler::getCurrentMousePos(){

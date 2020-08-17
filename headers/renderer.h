@@ -326,6 +326,7 @@ private:
  * 
  ****/
 
+    UniformBufferObject camera;
     static glm::vec3 cameraPos;
     static glm::vec3 cameraDir;
     static glm::vec3 cameraRight;

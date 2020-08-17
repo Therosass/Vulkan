@@ -892,7 +892,7 @@ void Renderer::createIndexBuffer() {
     vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
     //memcpy(data, indices.data(), (size_t) bufferSize);
     memcpy(data, bg_indices.data(), (size_t)bgSize );
-    //memcpy(data+bgSize, indices.data(), (size_t)(bufferSize)-(size_t)(bgSize) );
+    memcpy(static_cast<void*>(static_cast<char*>(data) + bgSize), indices.data(), (size_t)(bufferSize)-(size_t)(bgSize) );
     vkUnmapMemory(device, stagingBufferMemory);
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
@@ -957,15 +957,14 @@ void Renderer::updateUniformBuffer(uint32_t currentImage) {
 
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-    UniformBufferObject ubo{};
-    ubo.model = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view = glm::lookAt(cameraPos, lookPos, cameraUp);
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f);
-    ubo.proj[1][1] *= -1;
+    camera.model = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    camera.view = glm::lookAt(cameraPos, lookPos, cameraUp);
+    camera.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f);
+    camera.proj[1][1] *= -1;
 
     void* data;
-    vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
-    memcpy(data, &ubo, sizeof(ubo));
+    vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(camera), 0, &data);
+        memcpy(data, &camera, sizeof(camera));
     vkUnmapMemory(device, uniformBuffersMemory[currentImage]);
 }
 
@@ -1094,8 +1093,8 @@ void Renderer::createCommandBuffers(){
         vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
         vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
         vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(bg_indices.size()), 1, 0, 0, 0);
-        //vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
-        //vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, static_cast<uint32_t>(bg_indices.size()), 0, 0);
+        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+        vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, static_cast<uint32_t>(bg_indices.size()), 0, 0);
 
         vkCmdEndRenderPass(commandBuffers[i]);
         
@@ -1222,9 +1221,7 @@ glm::vec3 Renderer::readNewCameraPos(std::string posAsString){
         posAsString = matches.suffix().str();
     }
 
-    std::cout << "fail" << std::endl;
     return returnCoords;
-
 }   
 
 
@@ -1274,16 +1271,6 @@ void Renderer::drawFrame() {
     if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
-
-    VkSubpassDependency dependency{};
-    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependency.dstSubpass = 0;
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.srcAccessMask = 0;
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -1413,7 +1400,8 @@ void Renderer::transitionImageLayout(VkImage image, VkFormat format, VkImageLayo
     barrier.oldLayout = oldLayout;
     barrier.newLayout = newLayout;
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;barrier.image = image;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.image = image;
     barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     barrier.subresourceRange.baseMipLevel = 0;
     barrier.subresourceRange.levelCount = 1;
@@ -1446,7 +1434,7 @@ void Renderer::transitionImageLayout(VkImage image, VkFormat format, VkImageLayo
 
     vkCmdPipelineBarrier(
         commandBuffer,
-        0 /* TODO */, 0 /* TODO */,
+        sourceStage, destinationStage,
         0,
         0, nullptr,
         0, nullptr,
@@ -1620,8 +1608,44 @@ void Renderer::receiveMessage(){
                     //                "height: " << windowSize->second <<std::endl;
                     delete windowSize;
                     this->windowResizedFlag = true;
+                    break;
                 }
-                break;
+
+                case EVENTS::KEYBOARD_EVENT:
+                {
+                    char keyPressed = message->messageText[0];
+
+                    switch(keyPressed){
+                        case 'w':
+                        {
+                            std::cout << "forward" << std::endl;
+                            glm::vec3 cameraMovement = (lookPos - cameraPos);
+                            cameraPos += cameraMovement * 0.01f;
+                            lookPos += cameraMovement * 0.01f;
+                        }
+                        break;
+
+                        case 's':
+                        {
+                            std::cout << "backward" << std::endl;
+                            glm::vec3 cameraMovement = (lookPos - cameraPos);
+                            cameraPos -= cameraMovement * 0.01f;
+                            lookPos -= cameraMovement * 0.01f;
+                        }
+                        break;
+
+                        case 'r':
+                        {
+                            std::cout << "reset" << std::endl;
+                            setCamera();
+                        }
+                        break;
+
+                        default:
+                        break;
+                    }
+                    break;
+                }
 
                 default:
                 break;
