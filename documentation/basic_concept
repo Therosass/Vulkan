@@ -131,12 +131,13 @@ public functions:
 
 std::vector<std::pair<std::string,enum EVENTS>> getHeldKeys():
 	- returns currently held down keys and the events bound to them
-bool bindEventToKey(const char* button, enum EVENTS eventToBind, erroCode* errCode = nullptr):
+bool bindEventToKey(const char* button, enum EVENTS eventToBind, errorCode* errCode = nullptr):
 	- bind a new event to a key
 	- returns true on success false on failure
 	- optionally error cause can be retrieved via supplying an errorCode pointer
 		Error causes:
 		- key already bound
+		- no such key
 		- unsupported event
 		- invalid key
 	

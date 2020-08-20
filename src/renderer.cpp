@@ -1089,10 +1089,10 @@ void Renderer::createCommandBuffers(){
         VkBuffer vertexBuffers[] = {vertexBuffer};
         VkBuffer bgBuffers[] = {bgBuffer};
         VkDeviceSize offsets[] = {0};
-        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, bgBuffers, offsets);
+        //vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, bgBuffers, offsets);
         vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
         vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
-        vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(bg_indices.size()), 1, 0, 0, 0);
+        //vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(bg_indices.size()), 1, 0, 0, 0);
         vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
         vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, static_cast<uint32_t>(bg_indices.size()), 0, 0);
 
@@ -1193,7 +1193,7 @@ void Renderer::createDepthResources() {
 }
 
 void Renderer::setCamera(){
-    cameraPos = glm::vec3(3.0f,0.0f,0.0f);
+    cameraPos = glm::vec3(-3.0f,0.0f,0.0f);
     cameraUp = glm::vec3(0.0f,1.0f,0.0f);
     cameraRight = glm::normalize(glm::cross(cameraPos,cameraUp));
     lookPos = glm::vec3(0.0f,0.0f,0.0f);
@@ -1611,39 +1611,26 @@ void Renderer::receiveMessage(){
                     break;
                 }
 
-                case EVENTS::KEYBOARD_EVENT:
+                case EVENTS::CAMERA_FORWARD:
                 {
-                    char keyPressed = message->messageText[0];
-
-                    switch(keyPressed){
-                        case 'w':
-                        {
-                            std::cout << "forward" << std::endl;
-                            glm::vec3 cameraMovement = (lookPos - cameraPos);
-                            cameraPos += cameraMovement * 0.01f;
-                            lookPos += cameraMovement * 0.01f;
-                        }
-                        break;
-
-                        case 's':
-                        {
-                            std::cout << "backward" << std::endl;
-                            glm::vec3 cameraMovement = (lookPos - cameraPos);
-                            cameraPos -= cameraMovement * 0.01f;
-                            lookPos -= cameraMovement * 0.01f;
-                        }
-                        break;
-
-                        case 'r':
-                        {
-                            std::cout << "reset" << std::endl;
-                            setCamera();
-                        }
-                        break;
-
-                        default:
-                        break;
-                    }
+                    std::cout << "forward" << std::endl;
+                    glm::vec3 cameraMovement = (lookPos - cameraPos);
+                    cameraPos += cameraMovement * 0.01f;
+                    lookPos += cameraMovement * 0.01f;
+                    break;
+                }
+                case EVENTS::CAMERA_BACKWARD:
+                {
+                    std::cout << "backward" << std::endl;
+                    glm::vec3 cameraMovement = (lookPos - cameraPos);
+                    cameraPos -= cameraMovement * 0.01f;
+                    lookPos -= cameraMovement * 0.01f;
+                    break;
+                }
+                case EVENTS::CAMERA_RESET:
+                {
+                    std::cout << "reset" << std::endl;
+                    setCamera();
                     break;
                 }
 

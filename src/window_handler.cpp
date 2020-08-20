@@ -2,10 +2,6 @@
 
 #include "core.h"
 
-bool WindowHandler::forward = false;
-bool WindowHandler::backward = false;
-bool WindowHandler::reset = false;
-
 WindowHandler::WindowHandler(){
     this->moduleRole = MODULES::WINDOW;
 }
@@ -85,6 +81,29 @@ void WindowHandler::mouse_callback(GLFWwindow* window, double xPos, double yPos)
 
 void WindowHandler::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+
+    bool state = false;
+
+    if(key > 64 && key < 91){
+        key += 32;
+    }
+
+    switch(action){
+        case GLFW_PRESS:
+            state = true;
+        break;
+
+        case GLFW_RELEASE:
+            state = false;
+        break;
+
+        default:
+            std::cout << action;
+        return;
+    }
+
+    keyHandler.setKeyState(key, state);
+
 	//
 	//	REWORK
 	//
@@ -104,15 +123,6 @@ void WindowHandler::key_callback(GLFWwindow* window, int key, int scancode, int 
     //    cameraPos += cameraMov;
     //    lookPos += cameraMov;
     //}
-    if(key == GLFW_KEY_W){
-        forward = true;
-    }
-    if(key == GLFW_KEY_S){
-        backward = true;
-    }
-    if(key == GLFW_KEY_R){
-        reset = true;
-    }
     //if(key == GLFW_KEY_SPACE){
     //    cameraPos = glm::vec3(1.0f,0.0f,0.0f);
     //    cameraUp = glm::vec3(0.0f,1.0f,0.0f);
@@ -167,17 +177,16 @@ void WindowHandler::getWindowEvents(){
         sendDataPacket(EVENTS::WINDOW_RESIZE, MODULES::RENDERER, std::pair<int,int>(100,150));
 	    windowResizedFlag = false;
 	}
-    if(WindowHandler::forward){
-        sendMessage(EVENTS::KEYBOARD_EVENT,MODULES::RENDERER,"w");
-        WindowHandler::forward = false;
-    }
-    if(WindowHandler::backward){
-        sendMessage(EVENTS::KEYBOARD_EVENT,MODULES::RENDERER,"s");
-        WindowHandler::backward = false;
-    }
-    if(WindowHandler::reset){
-        sendMessage(EVENTS::KEYBOARD_EVENT,MODULES::RENDERER,"r");
-        WindowHandler::reset = false;
+    auto keys = keyHandler.getHeldKeys();
+    for(auto key : keys){
+        switch(key.actionBound){
+            case EVENTS::CAMERA_STRAFE_LEFT ... EVENTS::CAMERA_RESET:
+                sendMessage(key.actionBound,MODULES::RENDERER);
+                break;
+            default:
+                break;
+            
+        }
     }
 }
 

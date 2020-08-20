@@ -11,48 +11,12 @@
 #include <boost/thread/lock_guard.hpp>
 #include <boost/thread/condition_variable.hpp>
 
+#include "module_enums.h"
+
 #include <iostream>
 
 #define DEBUG_MODE_RENDERER
 #define DEBUG_MODE_MODULE
-
-enum DATATYPES{
-    UNKNOWN_TYPE,
-    CHAR,
-    FLOAT,
-    DOUBLE,
-    INT,
-    BYTES,
-    STDSTRING
-
-};
-
-namespace CONTAINERS{
-
-    constexpr int32_t is_array = 0x10000000;
-    constexpr int32_t is_list = 0x20000000;
-
-}
-
-enum ERRORCODES{
-    INVALID_ERROR
-};
-
-enum MODULES{
-    CORE = 0x00000000,
-    WINDOW = 0x00000001,
-    RENDERER = 0x00000002,
-    MESSAGEHANDLER = 0x000000003
-};
-
-enum EVENTS{
-#ifdef DEBUG_MODE_RENDERER
-    WINDOW_RESIZE_SUCCESSFUL,
-#endif
-    WINDOW_RESIZE,
-    CURSOR_MOVE,
-    KEYBOARD_EVENT
-};
 
 struct DataPacket{
     enum DATATYPES dataType;

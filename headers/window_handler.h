@@ -6,7 +6,7 @@ class Core;
 #include "GLFW/glfw3.h"
 
 #include "module.h"
-
+#include "keyHandler.h"
 
 class WindowHandler : public Module{
 public:
@@ -19,6 +19,7 @@ public:
     void setCurrentMousePos(std::pair<int,int> newMousePos);
 protected:
 private:
+    inline static KeyHandler keyHandler;
     Core* engineCore;
     GLFWwindow* window;
     void initGLFW();
@@ -26,9 +27,6 @@ private:
     int windowHeight = 600;    
     bool windowResizedFlag = false;
     std::pair<int,int> currentMousePos;
-    static bool forward;
-    static bool backward;
-    static bool reset;
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
     static void error_callback(int error, const char* description);
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
