@@ -2,6 +2,9 @@
 
 #include "core.h"
 
+double WindowHandler::XP = 0;
+double WindowHandler::YP = 0;
+    
 WindowHandler::WindowHandler(){
     this->moduleRole = MODULES::WINDOW;
 }
@@ -12,71 +15,9 @@ void WindowHandler::error_callback(int error, const char* description)
 }
 
 void WindowHandler::mouse_callback(GLFWwindow* window, double xPos, double yPos){
-    
-    /*
-	*
-	*	TO BE MOVED AND REWORKED
-	*
-	XP += xPos/1000;
-    YP += yPos/1000;
-
-    while(XP > 360){
-        XP -= 360;
-    }
-    while(XP < 0){
-        XP += 360;
-    }
-    if(YP > 85){
-        YP = 85;
-    }
-    if(YP < -85){
-        YP = -85;
-    }
-    cameraDir = glm::vec3(0.0f,0.0f,1.0f);
-    glm::quat turnQuat = glm::angleAxis(float(-XP/glm::half_pi<float>()), glm::vec3(0.0f,1.0f,0.0f));
-    cameraDir = turnQuat * cameraDir;
-    turnQuat = glm::angleAxis(glm::half_pi<float>(), glm::vec3(0.0f,1.0f,0.0f));
-    cameraRight = turnQuat * cameraDir;
-    turnQuat = glm::angleAxis(float(YP/glm::half_pi<float>()), cameraRight);
-    cameraUp =  glm::normalize(glm::cross(cameraRight, lookPos));
-    cameraDir = turnQuat * cameraDir;
-    lookPos = cameraPos + cameraDir;
-
-    //cameraRight = cameraPos + ((glm::angleAxis(glm::half_pi<float>(),glm::vec3(0.0f,1.0f,0.0f))) * cameraDir);
-    //cameraUp = glm::normalize(glm::cross(cameraRight, lookPos));
-    cameraDir = lookPos - cameraPos;
-    turnQuat = glm::angleAxis(float(YP/glm::half_pi<float>()), glm::vec3(0.0f,0.0f,1.0f));
-    cameraDir = turnQuat * cameraDir;
-    lookPos = cameraPos + cameraDir;
-    lookPos = cameraPos + (turnQuat * (lookPos - cameraPos));
-    cameraUp = glm::normalize(turnQuat * cameraUp);
-
-
+    XP += xPos;
+    YP += yPos;
     glfwSetCursorPos(window, 0, 0);
-    
-    while(cameraDir.x > 360){
-        cameraDir.x -= 360;
-    }
-    while(cameraDir.x < 0){
-        cameraDir.x += 360;
-    }
-    while(cameraDir.y > 360){
-        cameraDir.y -= 360;
-    }
-    while(cameraDir.y < 0){
-        cameraDir.y += 360;
-    }
-
-    std::cout << "Camera Data" << std::endl;
-    std::cout << "Rotations (X:Y) " << XP << " " << YP << std::endl;
-    std::cout << "Camera Direction " << cameraDir.x << " " << cameraDir.y << std::endl;
-    std::cout << "Camera Position " << cameraPos.x << " " << cameraPos.y << " " << cameraPos.z << std::endl;
-    std::cout << "Look position " << lookPos.x << " " << lookPos.y << " " << lookPos.z << std::endl;
-    std::cout << "Camera up " << cameraUp.x << " " <<  cameraUp.y << " " <<  cameraUp.z << std::endl;
-    std::cout << "Camera right " << cameraRight.x << " " <<  cameraRight.y << " " <<  cameraRight.z << std::endl;
-	*
-	*
-	*/
 }
 
 void WindowHandler::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -180,7 +121,7 @@ void WindowHandler::getWindowEvents(){
     auto keys = keyHandler.getHeldKeys();
     for(auto key : keys){
         switch(key.actionBound){
-            case EVENTS::CAMERA_STRAFE_LEFT ... EVENTS::CAMERA_RESET:
+            case EVENTS::CAMERA_FORWARD ... EVENTS::CAMERA_RESET:
                 sendMessage(key.actionBound,MODULES::RENDERER);
                 break;
             default:
@@ -188,6 +129,13 @@ void WindowHandler::getWindowEvents(){
             
         }
     }
+    if(XP != 0 || YP != 0){
+        sendDataPacket(EVENTS::CURSOR_MOVE,MODULES::RENDERER,std::pair<double,double>(XP,YP));
+        XP = 0;
+        YP = 0;
+    }
+
+
 }
 
 std::pair<int,int> WindowHandler::getCurrentMousePos(){

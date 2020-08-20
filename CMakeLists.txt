@@ -14,7 +14,7 @@ set(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations")
 project(Tutorial)
 
 # add the executable
-add_executable(main ./src/main.cpp ./src/renderer.cpp ./src/window_handler.cpp ./src/core.cpp ./src/module.cpp ./src/messageHandler.cpp ./src/error.cpp ./src/keyHandler.cpp)
+add_executable(main ./src/main.cpp ./src/renderer.cpp ./src/window_handler.cpp ./src/core.cpp ./src/module.cpp ./src/messageHandler.cpp ./src/error.cpp ./src/keyHandler.cpp ./src/camera.cpp)
 target_compile_features(main PRIVATE cxx_std_17)
 
 # includes

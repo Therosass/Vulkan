@@ -55,9 +55,7 @@ void MessageHandler::run(){
     while(true){
         boost::unique_lock<boost::mutex> lock(messageProcessingLock);
         cv.wait(lock, [this]{
-            std::cout << "Notified" << std::endl;
             if(readGuard.try_lock()){
-                std::cout << "Locked" << std::endl;
                 checkNewMessage();
                 readGuard.unlock();
             }

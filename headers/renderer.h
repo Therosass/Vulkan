@@ -4,9 +4,6 @@
 #include <vulkan/vulkan.hpp>
 #include "GLFW/glfw3.h"
 
-#define GLM_ENABLE_EXPERIMENTAL
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
@@ -20,6 +17,7 @@
 #include <unordered_map>
 
 #include "module.h"
+#include "camera.h"
 
 /****
  * 
@@ -326,15 +324,7 @@ private:
  * 
  ****/
 
-    UniformBufferObject camera;
-    static glm::vec3 cameraPos;
-    static glm::vec3 cameraDir;
-    static glm::vec3 cameraRight;
-    static glm::vec3 cameraUp;
-    static glm::vec3 lookPos;
-
-    void setCamera();
-    static glm::vec3 readNewCameraPos(std::string posAsString);
+    Camera camera;
 
     void loadModel();
 

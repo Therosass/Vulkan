@@ -21,13 +21,6 @@
 
 #include "core.h"
 
-glm::vec3 Renderer::cameraPos;
-glm::vec3 Renderer::cameraDir;
-glm::vec3 Renderer::cameraRight;
-glm::vec3 Renderer::cameraUp;
-glm::vec3 Renderer::lookPos;
-static double XP = 0;
-static double YP = 0;
 
 /*****
  * 
@@ -235,7 +228,6 @@ void Renderer::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoE
     createInfo.pfnUserCallback = debugCallback;
 }
 void Renderer::initVulkan(){
-    setCamera();
     createInstance();
     setupDebugMessenger();
     createSurface();
@@ -957,14 +949,15 @@ void Renderer::updateUniformBuffer(uint32_t currentImage) {
 
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-    camera.model = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    camera.view = glm::lookAt(cameraPos, lookPos, cameraUp);
-    camera.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f);
-    camera.proj[1][1] *= -1;
+    UniformBufferObject currentCamera;
+    currentCamera.model = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    currentCamera.view = glm::lookAt(camera.getCameraPos(), camera.getCameraLookPos(), camera.getCameraUp());
+    currentCamera.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f);
+    currentCamera.proj[1][1] *= -1;
 
     void* data;
     vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(camera), 0, &data);
-        memcpy(data, &camera, sizeof(camera));
+        memcpy(data, &currentCamera, sizeof(currentCamera));
     vkUnmapMemory(device, uniformBuffersMemory[currentImage]);
 }
 
@@ -1089,10 +1082,10 @@ void Renderer::createCommandBuffers(){
         VkBuffer vertexBuffers[] = {vertexBuffer};
         VkBuffer bgBuffers[] = {bgBuffer};
         VkDeviceSize offsets[] = {0};
-        //vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, bgBuffers, offsets);
+        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, bgBuffers, offsets);
         vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
         vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
-        //vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(bg_indices.size()), 1, 0, 0, 0);
+        vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(bg_indices.size()), 1, 0, 0, 0);
         vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
         vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, static_cast<uint32_t>(bg_indices.size()), 0, 0);
 
@@ -1191,39 +1184,6 @@ void Renderer::createDepthResources() {
     transitionImageLayout(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     
 }
-
-void Renderer::setCamera(){
-    cameraPos = glm::vec3(-3.0f,0.0f,0.0f);
-    cameraUp = glm::vec3(0.0f,1.0f,0.0f);
-    cameraRight = glm::normalize(glm::cross(cameraPos,cameraUp));
-    lookPos = glm::vec3(0.0f,0.0f,0.0f);
-}
-
-glm::vec3 Renderer::readNewCameraPos(std::string posAsString){
-    std::regex re = std::regex("([0-9.]+)+,?", std::regex::ECMAScript);
-    std::smatch matches;
-    std::regex_search(posAsString,matches,re);
-    unsigned int coordsGiven = 0;
-    glm::vec3 returnCoords = glm::vec3{0.0f,0.0f,0.0f};
-
-    while (std::regex_search(posAsString, matches, re))
-    {
-        coordsGiven++;
-        if(coordsGiven > 3){
-            std::cout << "Too many coordinates given, 3 coordinates max." << std::endl;
-            return glm::vec3{0.0f,0.0f,0.0f};
-        }
-
-        std::cout << matches[1] << std::endl;
-
-        returnCoords[coordsGiven - 1] = std::stod(matches[1]);
-
-        posAsString = matches.suffix().str();
-    }
-
-    return returnCoords;
-}   
-
 
 void Renderer::createSurface(){
     if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
@@ -1611,27 +1571,22 @@ void Renderer::receiveMessage(){
                     break;
                 }
 
-                case EVENTS::CAMERA_FORWARD:
+                case EVENTS::CAMERA_FORWARD ... EVENTS::CAMERA_STRAFE_LEFT:
                 {
-                    std::cout << "forward" << std::endl;
-                    glm::vec3 cameraMovement = (lookPos - cameraPos);
-                    cameraPos += cameraMovement * 0.01f;
-                    lookPos += cameraMovement * 0.01f;
-                    break;
-                }
-                case EVENTS::CAMERA_BACKWARD:
-                {
-                    std::cout << "backward" << std::endl;
-                    glm::vec3 cameraMovement = (lookPos - cameraPos);
-                    cameraPos -= cameraMovement * 0.01f;
-                    lookPos -= cameraMovement * 0.01f;
+                    camera.updateCamera(message->relatedEvent);
                     break;
                 }
                 case EVENTS::CAMERA_RESET:
                 {
                     std::cout << "reset" << std::endl;
-                    setCamera();
+                    camera.resetCamera();
                     break;
+                }
+                case EVENTS::CURSOR_MOVE:
+                {
+                    auto cursorPos = static_cast<std::pair<double,double>*>(message->dataPacket->data);
+                    camera.updateCamera(cursorPos->first, cursorPos->second);
+                    delete cursorPos;
                 }
 
                 default:

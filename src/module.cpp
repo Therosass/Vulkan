@@ -7,7 +7,6 @@ void Module::sendMessage(EVENTS event, MODULES targetModule, std::string message
     messageToSend->dstModule = targetModule;
     messageToSend->relatedEvent = event;
     messageToSend->messageText = message;
-    printMessage(*messageToSend);
     sendQueue.push(messageToSend);
     cv->notify_one();
 }
