@@ -14,6 +14,55 @@ Things that need to be happening
 	- (Multithreading)
 	
 *
+*	VULKAN RENDERER
+*
+
+Resources used:
+Created fix on initialization:
+	- Descriptor pools
+	- Swapchain
+	- Framebuffer
+	- Command pool
+	- VkImages
+	- Image views
+	- VmaAllocations
+	- Depth buffers
+	- Graphic pipelines
+	- Render pass and subpasses
+	- Command buffer
+
+Created at runtime on demand:
+	- Descriptor sets
+	- Descriptor set layouts
+	- Vertex/Index/Uniform buffers
+	- VmaAllocations
+	- VkImages
+	- Image views
+	- Image samplers
+	
+Rendering process:
+	The rendering process requires the following data from an object:
+		- Vertex locations
+		- Vertex amount
+		- Texture locations
+		- Texture ID
+		- Shader ID
+		- Transformation matrix (via push constant) 64 bytes
+		- MVP matrices UBO
+	Based on the information provided it should:
+		- Select or create a Render Pass with the same amount of attachments required
+		- Make sure that the required attachments are available and have descriptorsets.
+		- Bind the descriptor sets required by the graphics pipeline
+		- Create a command buffer that sets up the renderpass, bind the pipeline and the descriptors and buffer objects, then calls the draw commands
+		- 
+		
+		Setting up for command buffer recording in multiple threads:
+			- Create Framebuffer * Thread amount of command pools
+			- Using the subpass, use the threads to record the commands into the secondary buffers
+			- Once all threads are finished, execute the secondary command buffers from the primary
+		
+	
+*
 *	MESSAGES AND EVENTS
 *
 	
@@ -131,10 +180,10 @@ public functions:
 
 std::vector<std::pair<std::string,enum EVENTS>> getHeldKeys():
 	- returns currently held down keys and the events bound to them
-bool bindEventToKey(const char* button, enum EVENTS eventToBind, errorCode* errCode = nullptr):
+bool bindEventToKey(const char* button, enum EVENTS eventToBind, std::error_code* errCode = nullptr):
 	- bind a new event to a key
 	- returns true on success false on failure
-	- optionally error cause can be retrieved via supplying an errorCode pointer
+	- optionally error cause can be retrieved via supplying an std::error_code pointer
 		Error causes:
 		- key already bound
 		- no such key

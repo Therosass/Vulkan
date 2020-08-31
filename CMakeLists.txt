@@ -25,6 +25,7 @@ include_directories("headers/")
 include_directories("src/")
 include_directories("C:/VulkanSDK/1.2.148.0/Include/")
 include_directories("C:/boost_1_73_0/")
+include_directories("C:/VMA/src/")
 
 #libs
 add_library(glfw STATIC IMPORTED)

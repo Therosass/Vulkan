@@ -1,3 +1,4 @@
+#define VMA_IMPLEMENTATION
 #include <stdio.h>
 #include "core.h"
 
