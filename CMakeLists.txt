@@ -14,7 +14,7 @@ set(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations")
 project(Tutorial)
 
 # add the executable
-add_executable(main ./src/main.cpp ./src/renderer.cpp ./src/window_handler.cpp ./src/core.cpp ./src/module.cpp ./src/messageHandler.cpp ./src/error.cpp ./src/keyHandler.cpp ./src/camera.cpp)
+add_executable(main ./src/main.cpp ./src/renderer.cpp ./src/window_handler.cpp ./src/core.cpp ./src/module.cpp ./src/messageHandler.cpp ./src/error.cpp ./src/keyHandler.cpp ./src/camera.cpp ./src/resourceHandler.cpp ./src/renderable.cpp ./src/treeGraph.cpp)
 target_compile_features(main PRIVATE cxx_std_17)
 
 # includes
@@ -26,6 +26,8 @@ include_directories("src/")
 include_directories("C:/VulkanSDK/1.2.148.0/Include/")
 include_directories("C:/boost_1_73_0/")
 include_directories("C:/VMA/src/")
+include_directories("C:/MinGW/include/")
+
 
 #libs
 add_library(glfw STATIC IMPORTED)

@@ -8,6 +8,10 @@
 #include <glm/gtx/hash.hpp>
 #include <string>
 
+class ResourceHandler;
+struct ModelHandle;
+struct TextureHandle;
+
 struct  Vertex {
     glm::vec3 pos;
     glm::vec3 color;
@@ -66,19 +70,26 @@ struct UniformBufferObject {
 
 class Renderable{
 public:
-    virtual void render() = 0;
-    virtual void init(std::string texturePath, std::string modelPath) = 0;
+    void init(std::string texturePath, std::string modelPath, ResourceHandler* handler);
+    void createTextureView();
+    void createDescriptorSet();
+    int getDescriptorSet();
+    int getVertexBuffer();
+    int getIndexBuffer();
+    int getIndiceAmount();
 
     
 protected:
 private:
+    ResourceHandler* handler;
     bool isLoaded = false;
     std::string texturePath;
     std::string modelPath;
     unsigned int modelID = 0;
-    unsigned int indexID = 0;
+    ModelHandle* modelHandle;
     unsigned int textureID = 0;
     unsigned int textureViewID = 0;
+    TextureHandle* textureHandle;
     unsigned int descriptorSetID = 0;
 
 };

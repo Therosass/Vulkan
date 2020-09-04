@@ -3,6 +3,7 @@
 
 #include <vulkan/vulkan.hpp>
 #include "GLFW/glfw3.h"
+#include <boost/thread/shared_mutex.hpp>
 #include <vk_mem_alloc.h>
 
 #include <boost/thread/condition_variable.hpp>
@@ -34,8 +35,7 @@ class Core;
 ****/
 
 
-const std::string MODEL_PATH = "models/viking.obj";
-const std::string TEXTURE_PATH = "textures/viking.png";
+
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -72,8 +72,7 @@ struct SwapChainSupportDetails {
 class Renderer : public Module{
 public:
     void start(Core* engineCore, GLFWwindow* window);
-    void beginRenderPass();
-    void endRenderPass();
+    void render(Renderable object);
     Renderer();
     ~Renderer();
 
@@ -83,7 +82,9 @@ private:
     size_t currentFramebuffer = 0;
     bool framebufferResized = false;
 
-    void initVulkan();
+public:
+     void initVulkan();
+private:
     void cleanup();
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
@@ -92,7 +93,6 @@ private:
     bool hasStencilComponent(VkFormat format);
     void createLogicalDevice();
     void createSurface();
-    void drawFrame();
 
     static std::vector<char> readFile(const std::string& filename);
 
@@ -170,12 +170,14 @@ private:
     std::vector<VkBuffer> bufferObjects;
     std::vector<VmaAllocation> bufferAllocations;
     std::vector<VkBuffer> uniformBuffers;
-    std::vector<VkDeviceMemory> uniformBuffersMemory;
+    std::vector<VmaAllocation> uniformBufferAllocations;
 
+public:
     int createBufferObject(void* data, unsigned int size, VkBufferUsageFlags usage);
     int createUniformBuffer(uint32_t size);
     void updateUniformBuffer(unsigned int bufferToUpdate);
-    std::pair<int,int> uploadVertexData(std::vector<Vertex> vertices);
+
+private:
 
 /****
  * 
@@ -200,7 +202,7 @@ private:
 ****/
 
     VkImage depthImage;
-    VkDeviceMemory depthImageMemory;
+    VmaAllocation depthImageAllocation;
     VkImageView depthImageView;
 
     VkFormat findDepthFormat();
@@ -217,9 +219,12 @@ private:
     VkDescriptorSetLayout descriptorSetLayout;
     size_t boundDescriptorSets = 0;
 
+public:
+    int createDescriptorSet(unsigned int uboBufferID, unsigned int textureViewID);
+
+private:
     void createDescriptorSetLayout();
     void createDescriptorPool();
-    int createDescriptorSet(unsigned int uboBufferID, unsigned int textureViewID);
 
 /****
  * 
@@ -251,9 +256,12 @@ private:
 
     VkRenderPass renderPass;
 
+public:
+    void beginRenderPass();
+    void endRenderPass();
+private:
     void createRenderPass();
-    void beginRenderPassFunc();
-    void endRenderPassFunc();
+
 
 /****
  * 
@@ -280,14 +288,15 @@ private:
     std::vector<VkImageView> textureImageViews;
     std::vector<VkSampler> textureSamplers;
 
-    void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+public:
+    int loadImageData(void* data, unsigned int size, VkImageCreateInfo imageInfo);
+
+private:
     void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
     void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-    int loadImageData(void* data, unsigned int size, VkImageCreateInfo imageInfo);
     int createImageDescriptorSet(int imageIndex);
     VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
     void createTextureSampler();
-    int uploadTextureData();
 
 /****
  *
@@ -305,7 +314,6 @@ private:
  ****/
 
     Camera camera;
-    void loadModel();
 
 /*****
  * 

@@ -3,17 +3,17 @@
 
 #include <boost/cstdint.hpp>
 #include <unordered_map>
-
-enum DATATYPES{
-    UNKNOWN_TYPE,
-    CHAR,
-    FLOAT,
-    DOUBLE,
-    INT,
-    BYTES,
-    STDSTRING
-
-};
+namespace ENUMS{
+    enum DATATYPES{
+        UNKNOWN_TYPE,
+        CHAR,
+        FLOAT,
+        DOUBLE,
+        INT,
+        BYTES,
+        STDSTRING
+    };
+}
 
 namespace CONTAINERS{
 

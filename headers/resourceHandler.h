@@ -1,29 +1,61 @@
 #ifndef RESOURCEHANDLER_H
 #define RESOURCEHANDLER_H
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
-
-#define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
-
 #include <string>
 #include <vulkan/vulkan.hpp>
-#include <boost/bimap.hpp>
+#include <unordered_map>
+#include <vector>
+#include <boost/functional/hash/hash.hpp>
 
-struct textureHandle{
-    int textureHandle;
+#include "renderable.h"
+
+class Renderer;
+
+struct TextureHandle{
+    int textureID;
     std::string textureName;
-    int arrayLocation;
+    VkImageCreateInfo imageInfo;
+};
+
+struct ModelHandle{
+    int modelID;
+    std::string modelName;
+    std::vector<Vertex> vertices;
+    int vertexBufferID;
+    std::vector<uint32_t> indices;
+    int indexBufferID;
+};
+
+struct UBOHandle{
+    int BufferID;
+    int size;
 };
 
 class ResourceHandler{
-    void loadTexture(std::string texturePath);
-    const textureHandle& getTexture(int textureID);
-    const textureHandle& getTexture(std::string textureName);
+public:
+    ResourceHandler(Renderer* renderer);
+    int loadTexture(std::string texturePath);
+    int loadModel(std::string modelPath);
+    int createUniformBuffer(int size);
+    int createDescriptorSet(int bufferID, int TextureID);
+    TextureHandle* getTextureHandle(int textureID);
+    ModelHandle* getModelHandle(int textureID);
     int getTextureID(std::string textureName);
+
 private:
-    boost::bimap<int,textureHandle> textureMap;
+    std::unordered_map<int,TextureHandle*> textureMap;
+    std::unordered_map<std::string,int> textureStringsMap;
+    int nextTextureID = 0;
+
+    std::unordered_map<int,ModelHandle*> modelMap;
+    std::unordered_map<std::string,int> modelStringsMap;
+    int nextModelID = 0;
+
+    std::vector<UBOHandle> bufferObjects;
+
+    std::unordered_map<std::pair<int,int>,int,boost::hash<std::pair<int,int>>> descriptorSetMap;
+
+    Renderer* renderer;
 
 };
 

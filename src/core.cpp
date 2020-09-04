@@ -1,6 +1,11 @@
 #include "core.h"
 #include <iostream>
 
+
+const std::string MODEL_PATH = "models/viking.obj";
+const std::string MODEL_PATH2 = "models/BeeModel.obj";
+const std::string TEXTURE_PATH = "textures/viking.png";
+
 Core::Core(){
     this->moduleRole = MODULES::CORE;
     this->coreModule = this;
@@ -12,18 +17,32 @@ Core::Core(){
 void Core::run(){
     startModule(WINDOW);
     startModule(RENDERER);
+    this->resourceHandler = new ResourceHandler(renderer);
+    renderer->createUniformBuffer(sizeof(UniformBufferObject));
+    Renderable item2;
+	item.init(TEXTURE_PATH,MODEL_PATH2,resourceHandler);
+    item2.init(TEXTURE_PATH,MODEL_PATH,resourceHandler);
     std::cout << "initalized with" << std::endl 
             << "core: " << this << std::endl 
             << "msgHandler: " << this->msgHandler << std::endl 
             << "windowHandler: " << this->windowHandler << std::endl 
             << "renderer: " << this->renderer << std::endl; 
+
 	while (!glfwWindowShouldClose(windowHandler->getWindow()))
     {
         getWindowEvents();
         receiveMessage();
-        renderer->renderFrame();
+        renderer->beginRenderPass();
+        renderer->render(item);
+        renderer->render(item2);
+        renderer->endRenderPass();
 	}
 }
+
+Renderer* Core::getRenderer(){
+    return renderer;
+}
+
 
 std::pair<int,int> Core::getCurrentWindowSize(){
     return {currentWindowWidth,currentWindowHeight};

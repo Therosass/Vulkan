@@ -5,7 +5,7 @@
 #include "window_handler.h"
 #include "renderer.h"
 #include <boost/thread.hpp>
-//#include "keyHandler.h"
+#include "resourceHandler.h"
 
 
 class Core : public Module{
@@ -13,6 +13,7 @@ public:
     Core();
     ~Core(){};
     std::pair<int,int> getCurrentWindowSize();
+    Renderer* getRenderer();
     void run();
 
 protected:
@@ -20,6 +21,8 @@ protected:
 private:
     WindowHandler* windowHandler;
     Renderer* renderer;
+    ResourceHandler* resourceHandler;
+	Renderable item;
     void getWindowEvents();
     void startModule(MODULES module);
     void initGLFW();

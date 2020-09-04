@@ -20,7 +20,7 @@
 
 
 struct DataPacket{
-    enum DATATYPES dataType;
+    enum ENUMS::DATATYPES dataType;
     int length;
     void* data;
 };
@@ -39,7 +39,7 @@ class Module{
 public:
 
     template <class T>
-    DataPacket createDataPacket(T* data, enum DATATYPES dataType = DATATYPES::UNKNOWN_TYPE){
+    DataPacket createDataPacket(T* data, enum ENUMS::DATATYPES dataType = ENUMS::DATATYPES::UNKNOWN_TYPE){
         //static::assert((boost::is_pointer<T>,"createDataPacket can only be instantiated with a pointer type!"));
         auto copyOfData = new T(*data);
         
@@ -68,7 +68,7 @@ public:
     */
 
     template <class T>
-    void sendDataPacket(EVENTS event, MODULES targetModule, T dataToSend, std::string message = "", enum DATATYPES dataType = DATATYPES::UNKNOWN_TYPE){
+    void sendDataPacket(EVENTS event, MODULES targetModule, T dataToSend, std::string message = "", enum ENUMS::DATATYPES dataType = ENUMS::DATATYPES::UNKNOWN_TYPE){
         DataPacket newPacket = createDataPacket(std::addressof(dataToSend),dataType);
         Message* messageToSend = new Message;
         messageToSend->srcModule = moduleRole;

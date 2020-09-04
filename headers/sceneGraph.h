@@ -32,7 +32,7 @@ public:
     SceneGraph();
     ~SceneGraph(){};
     void init(Renderer* renderer);
-    void addNode(Renderable* newRenderable, Renderable* parentRenderable = nullptr);
+    void addNode(Renderable* newRenderable, TreeNode* parentNode = nullptr);
     void addNode(Transformation newTransformation);
     void updateNodes();
 private:
