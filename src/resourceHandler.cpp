@@ -135,9 +135,8 @@ int ResourceHandler::createDescriptorSet(int bufferID, int TextureID){
     else{
         int descID = renderer->createDescriptorSet(bufferID, TextureID);
         descriptorSetMap.insert({std::pair<int,int>(bufferID,TextureID), descID});
+        return descID;
     }
-
-    return 0;
 }
 
 TextureHandle* ResourceHandler::getTextureHandle(int textureID){

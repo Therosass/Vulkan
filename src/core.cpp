@@ -5,6 +5,7 @@
 const std::string MODEL_PATH = "models/viking.obj";
 const std::string MODEL_PATH2 = "models/BeeModel.obj";
 const std::string TEXTURE_PATH = "textures/viking.png";
+const std::string TEXTURE_PATH2 = "textures/black_and_yellow.png";
 
 Core::Core(){
     this->moduleRole = MODULES::CORE;
@@ -20,7 +21,7 @@ void Core::run(){
     this->resourceHandler = new ResourceHandler(renderer);
     renderer->createUniformBuffer(sizeof(UniformBufferObject));
     Renderable item2;
-	item.init(TEXTURE_PATH,MODEL_PATH2,resourceHandler);
+	item.init(TEXTURE_PATH2,MODEL_PATH2,resourceHandler);
     item2.init(TEXTURE_PATH,MODEL_PATH,resourceHandler);
     std::cout << "initalized with" << std::endl 
             << "core: " << this << std::endl 
