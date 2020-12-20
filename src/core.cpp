@@ -10,7 +10,8 @@ const std::string TEXTURE_PATH2 = "textures/black_and_yellow.png";
 Core::Core(){
     this->moduleRole = MODULES::CORE;
     this->coreModule = this;
-    this->msgHandler = new MessageHandler;
+    this->msgHandler = new MessageHandler();
+    this->sceneGraph = new SceneGraph();
     cv = msgHandler->getConditionVariablePtr();
     message_thread = new boost::thread(&MessageHandler::run, msgHandler);
 }
@@ -23,6 +24,8 @@ void Core::run(){
     Renderable item2;
 	item.init(TEXTURE_PATH2,MODEL_PATH2,resourceHandler);
     item2.init(TEXTURE_PATH,MODEL_PATH,resourceHandler);
+    sceneGraph->addNode(&item);
+    sceneGraph->addNode(&item2);
     std::cout << "initalized with" << std::endl 
             << "core: " << this << std::endl 
             << "msgHandler: " << this->msgHandler << std::endl 
@@ -34,8 +37,7 @@ void Core::run(){
         getWindowEvents();
         receiveMessage();
         renderer->beginRenderPass();
-        renderer->render(item);
-        renderer->render(item2);
+        renderer->renderScene(sceneGraph->getSceneGraph());
         renderer->endRenderPass();
 	}
 }

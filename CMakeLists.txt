@@ -9,12 +9,26 @@ set( ENV{Textures} "C:/Temp/cmakeTest/textures/")
 set( ENV{Vulkan} "C:/VulkanSDK/1.2.141.0/Lib32/")
 set( ENV{BOOST} "c:/boost_1_73_0/buildgcc/boost/bin.v2/libs/")
 set(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations")
+set(CMAKE_BUILD_TYPE "Debug")
 
 # set the project name
 project(Tutorial)
 
 # add the executable
-add_executable(main ./src/main.cpp ./src/renderer.cpp ./src/window_handler.cpp ./src/core.cpp ./src/module.cpp ./src/messageHandler.cpp ./src/error.cpp ./src/keyHandler.cpp ./src/camera.cpp ./src/resourceHandler.cpp ./src/renderable.cpp ./src/treeGraph.cpp)
+add_executable(main ./src/main.cpp 
+                    ./src/renderer.cpp 
+                    ./src/window_handler.cpp 
+                    ./src/core.cpp 
+                    ./src/module.cpp 
+                    ./src/messageHandler.cpp 
+                    ./src/error.cpp 
+                    ./src/keyHandler.cpp 
+                    ./src/camera.cpp 
+                    ./src/resourceHandler.cpp 
+                    ./src/renderable.cpp 
+                    ./src/treeGraph.cpp 
+                    ./src/sceneGraph.cpp)
+                    
 target_compile_features(main PRIVATE cxx_std_17)
 
 # includes

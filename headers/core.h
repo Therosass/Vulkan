@@ -6,6 +6,7 @@
 #include "renderer.h"
 #include <boost/thread.hpp>
 #include "resourceHandler.h"
+#include "sceneGraph.h"
 
 
 class Core : public Module{
@@ -22,6 +23,7 @@ private:
     WindowHandler* windowHandler;
     Renderer* renderer;
     ResourceHandler* resourceHandler;
+    SceneGraph* sceneGraph;
 	Renderable item;
     void getWindowEvents();
     void startModule(MODULES module);

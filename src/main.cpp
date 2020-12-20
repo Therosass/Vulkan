@@ -3,6 +3,8 @@
 #include "core.h"
 
 
+// TODO: REFACTOR EVERYTHING THAT NEEDS IT TO SMART POINTERS
+
 
 
 

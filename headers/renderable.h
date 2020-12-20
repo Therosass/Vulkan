@@ -80,7 +80,6 @@ public:
 
     
 protected:
-private:
     ResourceHandler* handler;
     bool isLoaded = false;
     std::string texturePath;

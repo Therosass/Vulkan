@@ -4,7 +4,6 @@
 #include <boost/thread/condition_variable.hpp>
 
 #include "renderable.h"
-#include "renderer.h"
 #include "treeGraph.h"
 
 
@@ -31,12 +30,13 @@ class SceneGraph{
 public:
     SceneGraph();
     ~SceneGraph(){};
-    void init(Renderer* renderer);
+    void init();
     void addNode(Renderable* newRenderable, TreeNode* parentNode = nullptr);
-    void addNode(Transformation newTransformation);
+    void addNode(Transformation* newTransformation, TreeNode* parentNode = nullptr);
+    std::vector<TreeNode*>& getSceneGraph();
+    //void addNode(Group* newGroup);
     void updateNodes();
 private:
-    Renderer* renderer;
     TreeGraph workingGraph;
     TreeGraph renderGraph;
     boost::condition_variable* cv;

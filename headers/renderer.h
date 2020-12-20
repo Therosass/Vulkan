@@ -17,7 +17,7 @@
 
 #include "module.h"
 #include "camera.h"
-#include "renderable.h"
+#include "treeGraph.h"
 
 /****
  * 
@@ -73,6 +73,7 @@ class Renderer : public Module{
 public:
     void start(Core* engineCore, GLFWwindow* window);
     void render(Renderable object);
+    void renderScene(std::vector<TreeNode*>& items);
     Renderer();
     ~Renderer();
 

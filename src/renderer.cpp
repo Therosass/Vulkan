@@ -49,6 +49,16 @@ void Renderer::render(Renderable object){
 
 }
 
+void Renderer::renderScene(std::vector<TreeNode*>& items){
+    VkDeviceSize offsets[] = {0};
+    for(auto item: items){
+        vkCmdBindDescriptorSets(commandBuffers[0], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[item->objectData->getDescriptorSet()], 0, nullptr);
+        vkCmdBindIndexBuffer(commandBuffers[0], bufferObjects[item->objectData->getIndexBuffer()], 0, VK_INDEX_TYPE_UINT32);
+        
+        vkCmdBindVertexBuffers(commandBuffers[0], 0, 1, &bufferObjects[item->objectData->getVertexBuffer()], offsets);
+        vkCmdDrawIndexed(commandBuffers[0], item->objectData->getIndiceAmount(), 1, 0, 0, 0);
+    }
+}
 
 Renderer::Renderer(){
     this->moduleRole = MODULES::RENDERER;
