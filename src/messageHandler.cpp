@@ -1,7 +1,7 @@
 #include "messageHandler.h"
 #include <iostream>
 
-void MessageHandler::registerModule(Module* moduleToRegister){
+void MessageHandler::registerModule(std::shared_ptr<Module> moduleToRegister){
     // TODO: add compile time enum max
     enum MODULES roleValue = moduleToRegister->getModuleRole();
     if(roleValue > 3 || roleValue < 0){

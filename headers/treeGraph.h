@@ -36,8 +36,8 @@ struct TreeNode{
     TreeNode* parentNode;
     std::vector<std::unique_ptr<TreeNode>> childNodes;
     enum NODETYPES nodeType;
-    Transformation* transformation;
-    Renderable* objectData;
+    std::shared_ptr<Transformation> transformation;
+    std::shared_ptr<Renderable> objectData;
 
     void updateChildren(Transformation* transform){
         
@@ -54,10 +54,10 @@ struct TreeNode{
     void deleteNode(){
         
         if(transformation != nullptr){
-            free(transformation);
+            transformation.reset();
         }
         if(objectData  != nullptr){
-            free(objectData);
+            objectData.reset();
         }
         for(auto& child : childNodes){
             child->deleteNode();
@@ -72,9 +72,9 @@ public:
     void addNode(std::unique_ptr<TreeNode> childNode, TreeNode* parentNode = nullptr);
     void update(TreeGraph& updateTarget);
     
-    std::vector<TreeNode*>& getLeaves();
+    const std::vector<TreeNode*>& getLeaves();
 private:
-    std::unique_ptr<TreeNode> rootNode;
+    TreeNode* rootNode;
     std::vector<TreeNode*> leaves;
 
 };

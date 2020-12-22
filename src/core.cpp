@@ -10,22 +10,23 @@ const std::string TEXTURE_PATH2 = "textures/black_and_yellow.png";
 Core::Core(){
     this->moduleRole = MODULES::CORE;
     this->coreModule = this;
-    this->msgHandler = new MessageHandler();
-    this->sceneGraph = new SceneGraph();
+    this->msgHandler = std::make_shared<MessageHandler>();
+    this->sceneGraph = std::make_unique<SceneGraph>();
     cv = msgHandler->getConditionVariablePtr();
-    message_thread = new boost::thread(&MessageHandler::run, msgHandler);
+    message_thread = new boost::thread(MessageHandler::run, msgHandler);
 }
 
 void Core::run(){
     startModule(WINDOW);
     startModule(RENDERER);
-    this->resourceHandler = new ResourceHandler(renderer);
+    this->resourceHandler = std::make_shared<ResourceHandler>(renderer);
     renderer->createUniformBuffer(sizeof(UniformBufferObject));
-    Renderable item2;
-	item.init(TEXTURE_PATH2,MODEL_PATH2,resourceHandler);
-    item2.init(TEXTURE_PATH,MODEL_PATH,resourceHandler);
-    sceneGraph->addNode(&item);
-    sceneGraph->addNode(&item2);
+    std::shared_ptr<Renderable> item = std::make_shared<Renderable>() ;
+    std::shared_ptr<Renderable> item2 = std::make_shared<Renderable>() ;
+	item->init(TEXTURE_PATH2,MODEL_PATH2,resourceHandler);
+    item2->init(TEXTURE_PATH,MODEL_PATH,resourceHandler);
+    sceneGraph->addNode(item);
+    sceneGraph->addNode(item2);
     std::cout << "initalized with" << std::endl 
             << "core: " << this << std::endl 
             << "msgHandler: " << this->msgHandler << std::endl 
@@ -42,7 +43,7 @@ void Core::run(){
 	}
 }
 
-Renderer* Core::getRenderer(){
+std::shared_ptr<Renderer> Core::getRenderer(){
     return renderer;
 }
 
@@ -55,17 +56,19 @@ void Core::getWindowEvents(){
     windowHandler->getWindowEvents();
 }
 
+//TODO: figure out how shared_ptr_from_this works
+
 void Core::startModule(MODULES module){
     switch(module){
         case MODULES::WINDOW:
-            windowHandler = new WindowHandler();
+            windowHandler = std::make_shared<WindowHandler>();
             windowHandler->init(this);
             std::cout << "window pointer: " << windowHandler << std::endl;
             msgHandler->registerModule(windowHandler);
             break;
         case MODULES::RENDERER:
-            renderer = new Renderer();
-            renderer->start(this,windowHandler->getWindow());
+            renderer = std::make_shared<Renderer>();
+            renderer->start(std::shared_ptr<Core>(this),windowHandler->getWindow());
             std::cout << "renderer pointer: " << renderer << std::endl;
             msgHandler->registerModule(renderer);
             break;

@@ -1,10 +1,12 @@
 #include "sceneGraph.h"
 
+//TODO: total rework, with proper memory management, and a memory allocation lib
+
 SceneGraph::SceneGraph(){
 
 }
 
-void SceneGraph::addNode(Renderable* newRenderable, TreeNode* parentNode){
+void SceneGraph::addNode(std::shared_ptr<Renderable> newRenderable, TreeNode* parentNode){
     std::unique_ptr<TreeNode> newNode = std::make_unique<TreeNode>();
     newNode->objectData = newRenderable;
     newNode->isModified = true;
@@ -13,10 +15,10 @@ void SceneGraph::addNode(Renderable* newRenderable, TreeNode* parentNode){
 }
 
 
-void SceneGraph::addNode(Transformation* newTransformation, TreeNode* parentNode){
+void SceneGraph::addNode(std::shared_ptr<Transformation> newTransformation, TreeNode* parentNode){
     return;
 }
 
-std::vector<TreeNode*>& SceneGraph::getSceneGraph(){
+const std::vector<TreeNode*>& SceneGraph::getSceneGraph(){
     return workingGraph.getLeaves();
 }

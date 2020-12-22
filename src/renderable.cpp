@@ -1,6 +1,6 @@
 #include "resourceHandler.h"
 
-void Renderable::init(std::string texturePath, std::string modelPath, ResourceHandler* handler){
+void Renderable::init(std::string texturePath, std::string modelPath, std::shared_ptr<ResourceHandler> handler){
     this->texturePath = texturePath;
     this->modelPath = modelPath;
     this->handler = handler;

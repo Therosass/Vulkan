@@ -70,7 +70,7 @@ struct UniformBufferObject {
 
 class Renderable{
 public:
-    void init(std::string texturePath, std::string modelPath, ResourceHandler* handler);
+    void init(std::string texturePath, std::string modelPath, std::shared_ptr<ResourceHandler> handler);
     void createTextureView();
     void createDescriptorSet();
     int getDescriptorSet();
@@ -80,15 +80,15 @@ public:
 
     
 protected:
-    ResourceHandler* handler;
+    std::shared_ptr<ResourceHandler> handler;
     bool isLoaded = false;
     std::string texturePath;
     std::string modelPath;
     unsigned int modelID = 0;
-    ModelHandle* modelHandle;
+    std::shared_ptr<ModelHandle> modelHandle;
     unsigned int textureID = 0;
     unsigned int textureViewID = 0;
-    TextureHandle* textureHandle;
+    std::shared_ptr<TextureHandle> textureHandle;
     unsigned int descriptorSetID = 0;
 
 };

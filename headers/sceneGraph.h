@@ -31,9 +31,9 @@ public:
     SceneGraph();
     ~SceneGraph(){};
     void init();
-    void addNode(Renderable* newRenderable, TreeNode* parentNode = nullptr);
-    void addNode(Transformation* newTransformation, TreeNode* parentNode = nullptr);
-    std::vector<TreeNode*>& getSceneGraph();
+    void addNode(std::shared_ptr<Renderable> newRenderable, TreeNode* parentNode = nullptr);
+    void addNode(std::shared_ptr<Transformation> newTransformation, TreeNode* parentNode = nullptr);
+    const std::vector<TreeNode*>& getSceneGraph();
     //void addNode(Group* newGroup);
     void updateNodes();
 private:

@@ -25,7 +25,7 @@
 *****/
 
 
-void Renderer::start(Core* engineCore, GLFWwindow* window){
+void Renderer::start(std::shared_ptr<Core> engineCore, GLFWwindow* window){
     this->window = window;
     this->engineCore = engineCore;
     if(!window || !engineCore){
@@ -49,7 +49,7 @@ void Renderer::render(Renderable object){
 
 }
 
-void Renderer::renderScene(std::vector<TreeNode*>& items){
+void Renderer::renderScene(const std::vector<TreeNode*>& items){
     VkDeviceSize offsets[] = {0};
     for(auto item: items){
         vkCmdBindDescriptorSets(commandBuffers[0], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[item->objectData->getDescriptorSet()], 0, nullptr);

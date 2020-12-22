@@ -9,22 +9,22 @@
 #include "sceneGraph.h"
 
 
+
 class Core : public Module{
 public:
     Core();
     ~Core(){};
     std::pair<int,int> getCurrentWindowSize();
-    Renderer* getRenderer();
+    std::shared_ptr<Renderer> getRenderer();
     void run();
 
 protected:
 
 private:
-    WindowHandler* windowHandler;
-    Renderer* renderer;
-    ResourceHandler* resourceHandler;
-    SceneGraph* sceneGraph;
-	Renderable item;
+    std::shared_ptr<WindowHandler> windowHandler;
+    std::shared_ptr<Renderer> renderer;
+    std::shared_ptr<ResourceHandler> resourceHandler;
+	std::shared_ptr<Renderable> item;
     void getWindowEvents();
     void startModule(MODULES module);
     void initGLFW();
@@ -37,8 +37,8 @@ private:
  * Module|MessageHandling implementation
  * 
  ****/
-
-    MessageHandler* msgHandler;
+    std::shared_ptr<SceneGraph> sceneGraph;
+    std::shared_ptr<MessageHandler> msgHandler;
     boost::thread* message_thread;
     void receiveMessage() override;
 };

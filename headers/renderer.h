@@ -71,9 +71,9 @@ struct SwapChainSupportDetails {
 
 class Renderer : public Module{
 public:
-    void start(Core* engineCore, GLFWwindow* window);
+    void start(std::shared_ptr<Core> engineCore, GLFWwindow* window);
     void render(Renderable object);
-    void renderScene(std::vector<TreeNode*>& items);
+    void renderScene(const std::vector<TreeNode*>& items);
     Renderer();
     ~Renderer();
 
@@ -327,7 +327,7 @@ private:
 /*
     Engine core
 */
-    Core* engineCore;
+    std::shared_ptr<Core> engineCore;
 
 /*
     GLFW window handling

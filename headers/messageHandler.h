@@ -13,7 +13,7 @@ public:
         moduleRole = MODULES::MESSAGEHANDLER;
     };
     void receiveMessage(){};
-    void registerModule(Module* moduleToRegister);
+    void registerModule(std::shared_ptr<Module> moduleToRegister);
     void moveMessages();
     void checkNewMessage();
     boost::condition_variable* getConditionVariablePtr();
@@ -25,7 +25,7 @@ protected:
     boost::condition_variable cv;
     boost::mutex messageProcessingLock;
     boost::mutex registerLock;
-    std::unordered_map<enum MODULES, Module*> modulesToListen;
+    std::unordered_map<enum MODULES, std::shared_ptr<Module>> modulesToListen;
     std::queue<Message*> messageTransferQueue;
 
 

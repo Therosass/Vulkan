@@ -33,21 +33,21 @@ struct UBOHandle{
 
 class ResourceHandler{
 public:
-    ResourceHandler(Renderer* renderer);
+    ResourceHandler(std::shared_ptr<Renderer> renderer);
     int loadTexture(std::string texturePath);
     int loadModel(std::string modelPath);
     int createUniformBuffer(int size);
     int createDescriptorSet(int bufferID, int TextureID);
-    TextureHandle* getTextureHandle(int textureID);
-    ModelHandle* getModelHandle(int textureID);
+    std::shared_ptr<TextureHandle> getTextureHandle(int textureID);
+    std::shared_ptr<ModelHandle> getModelHandle(int textureID);
     int getTextureID(std::string textureName);
 
 private:
-    std::unordered_map<int,TextureHandle*> textureMap;
+    std::unordered_map<int,std::shared_ptr<TextureHandle>> textureMap;
     std::unordered_map<std::string,int> textureStringsMap;
     int nextTextureID = 0;
 
-    std::unordered_map<int,ModelHandle*> modelMap;
+    std::unordered_map<int,std::shared_ptr<ModelHandle>> modelMap;
     std::unordered_map<std::string,int> modelStringsMap;
     int nextModelID = 0;
 
@@ -55,7 +55,7 @@ private:
 
     std::unordered_map<std::pair<int,int>,int,boost::hash<std::pair<int,int>>> descriptorSetMap;
 
-    Renderer* renderer;
+    std::shared_ptr<Renderer> renderer;
 
 };
 

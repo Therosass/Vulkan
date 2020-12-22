@@ -3,7 +3,7 @@
 #include <iostream>
 
 TreeGraph::TreeGraph(){
-    rootNode = std::make_unique<TreeNode>();
+    rootNode = new TreeNode();
     std::cout << "TreeGraph created";
 }
 
@@ -16,7 +16,7 @@ TreeGraph::TreeGraph(){
 
 void TreeGraph::addNode(std::unique_ptr<TreeNode> childNode, TreeNode* parentNode){
     if(parentNode == nullptr){
-        parentNode = rootNode.get();
+        parentNode = rootNode;
         std::cout << "parent node is set to root node." << std::endl;
     }
     childNode->parentNode = parentNode;
@@ -38,6 +38,6 @@ void TreeGraph::update(TreeGraph& updateTarget){
 
 }
 
-std::vector<TreeNode*>& TreeGraph::getLeaves(){
+const std::vector<TreeNode*>& TreeGraph::getLeaves(){
     return leaves;
 }

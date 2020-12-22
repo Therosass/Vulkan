@@ -7,7 +7,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
-ResourceHandler::ResourceHandler(Renderer* renderer){
+ResourceHandler::ResourceHandler(std::shared_ptr<Renderer> renderer){
     this->renderer = renderer;
 }
 
@@ -41,7 +41,7 @@ int ResourceHandler::loadTexture(std::string texturePath){
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    TextureHandle* handle = new TextureHandle{};
+    std::shared_ptr<TextureHandle> handle = std::make_shared<TextureHandle>();
     handle->textureID = renderer->loadImageData(pixels,imageSize,imageInfo);
     handle->imageInfo = imageInfo;
     handle->textureName = texturePath;
@@ -101,7 +101,7 @@ int ResourceHandler::loadModel(std::string modelPath) {
         }
     }
     
-    ModelHandle* handle = new ModelHandle{};
+    std::shared_ptr<ModelHandle> handle = std::make_shared<ModelHandle>();
     handle->modelID = nextModelID;
     handle->indices = indices;
     handle->modelName = modelPath;
@@ -139,12 +139,12 @@ int ResourceHandler::createDescriptorSet(int bufferID, int TextureID){
     }
 }
 
-TextureHandle* ResourceHandler::getTextureHandle(int textureID){
+std::shared_ptr<TextureHandle> ResourceHandler::getTextureHandle(int textureID){
     auto result = textureMap.find(textureID);
     return result->second;
 }
 
-ModelHandle* ResourceHandler::getModelHandle(int modelID){
+std::shared_ptr<ModelHandle> ResourceHandler::getModelHandle(int modelID){
     auto result = modelMap.find(modelID);
     return result->second;
 }
