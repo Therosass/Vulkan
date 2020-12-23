@@ -1,5 +1,7 @@
 .vscode
 textures
 models
-build
+build/**
+libs/**
+headers/**
 *.spv
