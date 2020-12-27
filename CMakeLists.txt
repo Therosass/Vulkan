@@ -22,7 +22,8 @@ add_executable(main ./src/main.cpp
                     ./src/module.cpp 
                     ./src/messageHandler.cpp 
                     ./src/error.cpp 
-                    ./src/keyHandler.cpp 
+                    ./src/keyHandler.cpp
+                    ./src/logic.cpp  
                     ./src/camera.cpp 
                     ./src/resourceHandler.cpp 
                     ./src/renderable.cpp 

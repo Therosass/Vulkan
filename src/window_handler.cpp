@@ -39,7 +39,6 @@ void WindowHandler::key_callback(GLFWwindow* window, int key, int scancode, int 
         break;
 
         default:
-            std::cout << action;
         return;
     }
 
@@ -123,6 +122,9 @@ void WindowHandler::getWindowEvents(){
         switch(key.actionBound){
             case EVENTS::CAMERA_FORWARD ... EVENTS::CAMERA_RESET:
                 sendMessage(key.actionBound,MODULES::RENDERER);
+                break;
+            case EVENTS::LOAD_MODEL:
+                sendMessage(key.actionBound,MODULES::LOGIC);
                 break;
             default:
                 break;

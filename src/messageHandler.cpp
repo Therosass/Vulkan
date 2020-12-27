@@ -4,7 +4,7 @@
 void MessageHandler::registerModule(std::shared_ptr<Module> moduleToRegister){
     // TODO: add compile time enum max
     enum MODULES roleValue = moduleToRegister->getModuleRole();
-    if(roleValue > 3 || roleValue < 0){
+    if(roleValue > 4 || roleValue < 0){
         std::cout << this << " " << moduleRole << std::endl;
         throw std::runtime_error("moduleRole not set properly");
     }
@@ -60,7 +60,7 @@ void MessageHandler::run(){
                 readGuard.unlock();
             }
             else{
-                std::cout << "Failed to locked" << std::endl;
+                std::cout << "Failed to lock" << std::endl;
                 return false;
             }
 

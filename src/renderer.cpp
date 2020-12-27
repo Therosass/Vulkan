@@ -1014,8 +1014,11 @@ void Renderer::beginRenderPass(){
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-    updateUniformBuffer(0);
-
+    for(int i = 0; i < uniformBuffers.size(); i++)
+    {
+        updateUniformBuffer(i);
+    }
+    
     // Check if a previous frame is using this image (i.e. there is its fence to wait on)
     if (imagesInFlight[currentFramebuffer] != VK_NULL_HANDLE) {
         vkWaitForFences(device, 1, &imagesInFlight[currentFramebuffer], VK_TRUE, UINT64_MAX);
@@ -1525,7 +1528,9 @@ void Renderer::receiveMessage(){
     while(auto message = readNextMessage()){
         switch(message->srcModule){
             case MODULES::WINDOW:
+            
             switch(message->relatedEvent){
+
                 case EVENTS::WINDOW_RESIZE:
                 {
                     std::pair<int,int>* windowSize = static_cast<std::pair<int,int>*>(message->dataPacket->data);
@@ -1543,12 +1548,14 @@ void Renderer::receiveMessage(){
                     camera.updateCamera(message->relatedEvent);
                     break;
                 }
+
                 case EVENTS::CAMERA_RESET:
                 {
                     std::cout << "reset" << std::endl;
                     camera.resetCamera();
                     break;
                 }
+
                 case EVENTS::CURSOR_MOVE:
                 {
                     auto cursorPos = static_cast<std::pair<double,double>*>(message->dataPacket->data);

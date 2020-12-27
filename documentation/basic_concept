@@ -15,6 +15,7 @@ Things that need to be happening
 	
 *
 *	MESSAGES AND EVENTS
+*	MODULES: CORE
 *
 	
 Message Handler:
@@ -56,6 +57,7 @@ What the job of the messageHandler:
 	
 *
 *	VULKAN RENDERER
+*	MODULES: RENDERER
 *
 
 Resources used:
@@ -150,6 +152,7 @@ Interface:
 
 *
 *	INPUT EVENT HANDLING
+*	MODULES: WINDOW(receiving), CORE(process relevant events), LOGIC(process relevant events)
 *
 
 Submodule of window handler (this is because window handling module communicates with OS).
@@ -184,7 +187,8 @@ bool bindEventToKey(const char* button, enum EVENTS eventToBind, std::error_code
 	
 
 *
-*	RESOURCES
+*	RENDERABLE RESOURCES
+*	MODULES: CORE(loading resources), LOGIC(creating events for CORE module), RENDERER(creating video card memory allocations and render calls)
 *
 
 namespace RenderingOptions:
@@ -203,6 +207,7 @@ class Renderable:
 
 *
 *	RESOURCE LOADING AND MANAGEMENT
+*	MODULES: CORE(loading resources), LOGIC(creating events for CORE module)
 *
 
 Events that need to be handled:
@@ -211,15 +216,16 @@ A new map has to be loaded:
 	- Loading of all the new objects
 	- Building a SceneGraph
 
-During run:
+During runtime:
 	- Load of a new object that is optional and/or rare
 	- Unload less used resources to free memory if needed
 	- Changing of SceneGraph
 	- Updating Uniforms
+	- Possibly save resources to Disk
 	
 On program end:
 	- Free all allocated memory
-	- Possibly save SceneGraph to Disk
+	- Possibly save resources to Disk
 
 References to loaded meshes are handled via a map using std::string as key.
 *
@@ -240,12 +246,15 @@ Tasks:
 
 
 *
-*	ENGINE CORE CONCEPT
+*	ENGINE CORE
+*	MODULES: CORE
 *
 
-Basic engine concept
-GLFW interfaces with OS
-	- Events polled are sent to Core
+Basic engine concept, modules that each own a messaging queue to send and another to receive events:
+	- WINDOW module interfaces with OS, events incoming polled are sent to Core, which redistributes them:
+	- LOGIC module sends requests for loading new resources, or marks currently loaded ones as unnneded
+	- RENDERER module sends messages regarding the current frame render status
+	
 Core:
 	MessageHandler:
 		- Sends relevant events to their respective modules
