@@ -6,6 +6,8 @@ const std::string TEXTURE_PATH = "textures/viking.png";
 const std::string TEXTURE_PATH2 = "textures/black_and_yellow.png";
 //TODO: read texture from model object file!!!
 
+unsigned int Renderable::objectCount = 0;
+
 void Renderable::init(std::string modelPath, std::shared_ptr<ResourceHandler> handler){
     std::string texturePath;
     if(modelPath == MODEL_PATH){
@@ -20,31 +22,21 @@ void Renderable::init(std::string modelPath, std::shared_ptr<ResourceHandler> ha
     this->texturePath = texturePath;
     this->modelPath = modelPath;
     this->handler = handler;
-    modelID = handler->loadModel(modelPath);
+    modelID = handler->loadModel(modelPath, objectCount);
     this->modelHandle = handler->getModelHandle(modelID);
     textureID = handler->loadTexture(texturePath);
     textureViewID = textureID;
     this->textureHandle = handler->getTextureHandle(textureID);
-    descriptorSetID = handler->createDescriptorSet(0,textureID);
-    TransformationMatrix.scale = {
-        1.0f, 0.0f, 0.0f, 0.0f, 
-        0.0f, 1.0f, 0.0f, 0.0f, 
-        0.0f, 0.0f, 1.0f, 0.0f, 
-        0.0f, 0.0f, 0.0f, 1.0f
-    };
-    TransformationMatrix.rotate = {
-        1.0f, 0.0f, 0.0f, 0.0f, 
-        0.0f, 1.0f, 0.0f, 0.0f, 
-        0.0f, 0.0f, 1.0f, 0.0f, 
-        0.0f, 0.0f, 0.0f, 1.0f
-    };
-    TransformationMatrix.translate = {
-        1.0f, 0.0f, 0.0f, 0.0f, 
-        0.0f, 1.0f, 0.0f, 0.0f, 
-        0.0f, 0.0f, 1.0f, 0.0f, 
-        0.0f, 0.0f, 0.0f, 1.0f
-    };  
+    descriptorSetID = handler->createDescriptorSet(1,textureID);
+    objectCount++;
+}
 
+void Renderable::updateBufferValue(){
+    handler->updateUniformBuffer(modelHandle->TRMatrix.get(), sizeof(TransformationMatrix), modelHandle->TRMatrixBufferOffset);
+}
+
+void Renderable::setTRMatrix(std::shared_ptr<TransformationMatrix> newMatrix){
+    modelHandle->TRMatrix = newMatrix;
 }
 
 int Renderable::getDescriptorSet(){
@@ -62,3 +54,12 @@ int Renderable::getIndexBuffer(){
 int Renderable::getIndiceAmount(){
     return modelHandle->indices.size();
 }
+
+int Renderable::getTRBufferID(){
+    return modelHandle->TRMatrixID;
+}
+
+int Renderable::getTRBufferOffset(){
+    return modelHandle->TRMatrixBufferOffset;
+}
+

@@ -24,6 +24,18 @@ const glm::vec3& Camera::getCameraLookPos(){
     return lookPos;
 }
 
+void Camera::updateSwapchainExtent(VkExtent2D newSwapchainExtent){
+    swapchainExtent = newSwapchainExtent;
+}
+
+void Camera::setCameraBuffer(int bufferID){
+    cameraBuffer = bufferID;
+}
+
+int Camera::getCameraBuffer(){
+    return cameraBuffer;
+}
+
 void Camera::updateCamera(double x, double y){
 
 	xPos += x/50;
@@ -108,6 +120,16 @@ void Camera::updateCamera(enum EVENTS movementEvent){
         default:
         break;
     }
+}
+
+UniformBufferObject Camera::getCurrentCamera(){
+    UniformBufferObject currentCamera;
+    currentCamera.model = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    currentCamera.view = glm::lookAt(getCameraPos(), getCameraLookPos(), getCameraUp());
+    currentCamera.proj = glm::perspective(glm::radians(45.0f), swapchainExtent.width / (float) swapchainExtent.height, 0.1f, 10.0f);
+    currentCamera.proj[1][1] *= -1;
+
+    return currentCamera;
 }
 
 

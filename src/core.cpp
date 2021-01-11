@@ -19,7 +19,6 @@ void Core::run(){
     startModule(LOGIC);
     startModule(RENDERER);
     this->resourceHandler = std::make_shared<ResourceHandler>(renderer);
-    renderer->createUniformBuffer(sizeof(UniformBufferObject));
 
     std::cout << "initalized with" << std::endl 
             << "core: " << this << std::endl 
@@ -29,8 +28,6 @@ void Core::run(){
             << "logic: " << this->logic << std::endl; 
 	while (!glfwWindowShouldClose(windowHandler->getWindow()))
     {
-        //logic->loadModel("models/viking.obj");
-        sendMessage(EVENTS::LOAD_MODEL, MODULES::LOGIC);
         getWindowEvents();
         receiveMessage();
         logic->update();
@@ -80,18 +77,41 @@ void Core::startModule(MODULES module){
 }
 
 void Core::receiveMessage(){
-    while(auto message = readNextMessage()){
-        switch(message->srcModule){
+    while(auto message = readNextMessage())
+    {
+        switch(message->srcModule)
+        {
             case MODULES::LOGIC:
             
-            switch(message->relatedEvent){
+            switch(message->relatedEvent)
+            {
                 case EVENTS::LOAD_MODEL:
                 {
                     std::cout << "whatever" << std::endl;
                     std::shared_ptr<Renderable> item = std::make_shared<Renderable>() ;
                     item->init(message->messageText,resourceHandler);
-                    sceneGraph->addNode(item);
-                    break;
+                    std::shared_ptr<TransformationMatrix> transformation = std::make_shared<TransformationMatrix>();
+                    transformation->scale = {
+                        0.2f, 0.0f, 0.0f, 0.0f,
+                        0.0f, 0.2f, 0.0f, 0.0f,
+                        0.0f, 0.0f, 0.2f, 0.0f,
+                        0.0f, 0.0f, 0.0f, 1.0f
+                    };
+                    transformation->rotate = {
+                        1.0f, 0.0f, 0.0f, 0.0f,
+                        0.0f, 1.0f, 0.0f, 0.0f,
+                        0.0f, 0.0f, 1.0f, 0.0f,
+                        0.0f, 0.0f, 0.0f, 1.0f
+                    };
+                    transformation->translate = {
+                        1.0f, 0.0f, 0.0f, 0.0f,
+                        0.0f, 1.0f, 0.0f, 0.0f,
+                        0.0f, 0.0f, 1.0f, 0.0f,
+                        0.0f, 0.0f, 0.0f, 1.0f
+                    };  
+                    auto result = sceneGraph->addNode(transformation);
+                    sceneGraph->addNode(item, result);
+                break;
                 }
     
                 default:

@@ -7,8 +7,11 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
+int ResourceHandler::TRMatrixBufferID = 0;
+
 ResourceHandler::ResourceHandler(std::shared_ptr<Renderer> renderer){
     this->renderer = renderer;
+    TRMatrixBufferID = renderer->createUniformBuffer(0x1000);
 }
 
 int ResourceHandler::loadTexture(std::string texturePath){
@@ -53,7 +56,7 @@ int ResourceHandler::loadTexture(std::string texturePath){
     return handle->textureID;
 }
 
-int ResourceHandler::loadModel(std::string modelPath) {
+int ResourceHandler::loadModel(std::string modelPath, int objectCount) {
     std::cout << "loading model for: " << modelPath << std::endl;
 
     auto it = modelStringsMap.find(modelPath);
@@ -100,14 +103,37 @@ int ResourceHandler::loadModel(std::string modelPath) {
             indices.push_back(uniqueVertices[vertex]);
         }
     }
-    
+
+    std::shared_ptr<TransformationMatrix> trMatrix = std::make_shared<TransformationMatrix>();
+    trMatrix->scale = {
+        1.0f, 0.0f, 0.0f, 0.0f, 
+        0.0f, 1.0f, 0.0f, 0.0f, 
+        0.0f, 0.0f, 1.0f, 0.0f, 
+        0.0f, 0.0f, 0.0f, 1.0f
+    };
+    trMatrix->rotate = {
+        1.0f, 0.0f, 0.0f, 0.0f, 
+        0.0f, 1.0f, 0.0f, 0.0f, 
+        0.0f, 0.0f, 1.0f, 0.0f, 
+        0.0f, 0.0f, 0.0f, 1.0f
+    };
+    trMatrix->translate = {
+        1.0f, 0.0f, 0.0f, 0.0f, 
+        0.0f, 1.0f, 0.0f, 0.0f, 
+        0.0f, 0.0f, 1.0f, 0.0f, 
+        0.0f, 0.0f, 0.0f, 1.0f
+    };  
     std::shared_ptr<ModelHandle> handle = std::make_shared<ModelHandle>();
     handle->modelID = nextModelID;
     handle->indices = indices;
     handle->modelName = modelPath;
     handle->vertices = vertices;
-    handle->vertexBufferID = renderer->createBufferObject(vertices.data(), sizeof(vertices[0]) * vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    handle->TRMatrix = trMatrix;
+    handle->TRMatrixID = TRMatrixBufferID;
+    handle->TRMatrixBufferOffset = objectCount*sizeof(UniformBufferObject);
     handle->indexBufferID = renderer->createBufferObject(indices.data(), sizeof(indices[0]) * indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+    handle->vertexBufferID = renderer->createBufferObject(vertices.data(), sizeof(vertices[0]) * vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    renderer->updateUniformBuffer(TRMatrixBufferID, trMatrix.get(), sizeof(UniformBufferObject), handle->TRMatrixBufferOffset);
 
     modelMap.insert({nextModelID,handle});
     textureStringsMap.insert({modelPath,nextModelID});
@@ -127,13 +153,22 @@ int ResourceHandler::createUniformBuffer(int size){
     return handle.BufferID;
 }
 
+void ResourceHandler::updateUniformBuffer(void* data, unsigned int size, unsigned int offset){
+    renderer->updateUniformBuffer(TRMatrixBufferID, data, size, offset);
+}
+
+void ResourceHandler::updateUniformBuffer(unsigned int bufferToUpdate, void* data, unsigned int size, unsigned int offset){
+    renderer->updateUniformBuffer(bufferToUpdate, data, size, offset);
+}
+
+
 int ResourceHandler::createDescriptorSet(int bufferID, int TextureID){
     auto it = descriptorSetMap.find({bufferID,TextureID});
     if(it != descriptorSetMap.end()){
         return it->second;
     }
     else{
-        int descID = renderer->createDescriptorSet(bufferID, TextureID);
+        int descID = renderer->createDescriptorSet(bufferID, TextureID, TRMatrixBufferID);
         descriptorSetMap.insert({std::pair<int,int>(bufferID,TextureID), descID});
         return descID;
     }

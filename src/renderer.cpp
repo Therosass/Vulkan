@@ -41,6 +41,7 @@ void Renderer::render(Renderable object){
     std::cout << "vertex buffer ID: " << object.getVertexBuffer() << std::endl;
     std::cout << "vertex amount: " << object.getIndiceAmount() << std::endl;
 
+
     vkCmdBindDescriptorSets(commandBuffers[0], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[object.getDescriptorSet()], 0, nullptr);
     vkCmdBindIndexBuffer(commandBuffers[0], bufferObjects[object.getIndexBuffer()], 0, VK_INDEX_TYPE_UINT32);
     
@@ -51,8 +52,13 @@ void Renderer::render(Renderable object){
 
 void Renderer::renderScene(const std::vector<TreeNode*>& items){
     VkDeviceSize offsets[] = {0};
+    //uint32_t test[2] = {0, 0};
+
+
     for(auto item: items){
-        vkCmdBindDescriptorSets(commandBuffers[0], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[item->objectData->getDescriptorSet()], 0, nullptr);
+        uint32_t test[2] = {0, item->objectData->getTRBufferOffset()};
+
+        vkCmdBindDescriptorSets(commandBuffers[0], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[item->objectData->getDescriptorSet()], 2, test);
         vkCmdBindIndexBuffer(commandBuffers[0], bufferObjects[item->objectData->getIndexBuffer()], 0, VK_INDEX_TYPE_UINT32);
         
         vkCmdBindVertexBuffers(commandBuffers[0], 0, 1, &bufferObjects[item->objectData->getVertexBuffer()], offsets);
@@ -69,14 +75,6 @@ Renderer::~Renderer(){
     cleanup();
 }
 
-
-
-
-
-
-
-
-
 /*****
  * 
  * VULKAN FUNCTIONS BELOW
@@ -91,7 +89,7 @@ void Renderer::createInstance() {
 
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Hello Triangle";
+    appInfo.pApplicationName = "Vulcanicus";
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "No Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -552,6 +550,7 @@ void Renderer::createSwapChain() {
     vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
     swapChainImageFormat = surfaceFormat.format;
     swapChainExtent = extent;
+    camera.updateSwapchainExtent(swapChainExtent);
 
 }
 
@@ -868,7 +867,7 @@ void Renderer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemor
         throw std::runtime_error("failed to allocate buffer memory!");
     }
 
-    vkBindBufferMemory(device, buffer, bufferMemory, 0);
+    vkBindBufferMemory(device, buffer, bufferMemory, 0);    
 }
 
 int Renderer::createUniformBuffer(uint32_t size) {
@@ -888,30 +887,20 @@ int Renderer::createUniformBuffer(uint32_t size) {
     uniformBuffers.push_back(uniformBuffer);
     uniformBufferAllocations.push_back(allocation);
 
-
-    return uniformBuffers.size() - 1;
+    return (uniformBuffers.size() - 1);
 }
 
-void Renderer::updateUniformBuffer(unsigned int bufferToUpdate) {
-    static auto startTime = std::chrono::high_resolution_clock::now();
+void Renderer::updateUniformBuffer(unsigned int bufferToUpdate, void* data, unsigned int size, unsigned int offset) {
 
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-    UniformBufferObject currentCamera;
-    currentCamera.model = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    currentCamera.view = glm::lookAt(camera.getCameraPos(), camera.getCameraLookPos(), camera.getCameraUp());
-    currentCamera.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f);
-    currentCamera.proj[1][1] *= -1;
-
-    void* data;
-    vmaMapMemory(memoryAllocator, uniformBufferAllocations[bufferToUpdate], &data);
-        memcpy(data, &currentCamera, sizeof(currentCamera));
+    void* memoryLocation;
+    vmaMapMemory(memoryAllocator, uniformBufferAllocations[bufferToUpdate], &memoryLocation);
+        memcpy(memoryLocation + offset, data, size);
     vmaUnmapMemory(memoryAllocator, uniformBufferAllocations[bufferToUpdate]);
 }
 
 void Renderer::createDescriptorPool() {
     std::array<VkDescriptorPoolSize, 2> poolSizes{};
-    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     poolSizes[0].descriptorCount = static_cast<uint32_t>(64);
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     poolSizes[1].descriptorCount = static_cast<uint32_t>(64);
@@ -927,7 +916,44 @@ void Renderer::createDescriptorPool() {
     }
 }
 
-int Renderer::createDescriptorSet(unsigned int uboBufferID, unsigned int textureViewID) {
+void Renderer::createDescriptorSetLayout() {
+    VkDescriptorSetLayoutBinding uboLayoutBinding{};
+    uboLayoutBinding.binding = 0;
+    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    uboLayoutBinding.descriptorCount = 1;
+    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    uboLayoutBinding.pImmutableSamplers = nullptr; // Optional  
+
+    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+    samplerLayoutBinding.binding = 1;
+    samplerLayoutBinding.descriptorCount = 1;
+    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    samplerLayoutBinding.pImmutableSamplers = nullptr;
+    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    VkDescriptorSetLayoutBinding transformLayoutBinding{};
+    transformLayoutBinding.binding = 2;
+    transformLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    transformLayoutBinding.descriptorCount = 1;
+    transformLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    transformLayoutBinding.pImmutableSamplers = nullptr; // Optional  
+
+    //std::array<VkDescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
+    std::array<VkDescriptorSetLayoutBinding, 3> bindings = {uboLayoutBinding, samplerLayoutBinding, transformLayoutBinding};
+    
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+    layoutInfo.pBindings = bindings.data();
+
+    if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create descriptor set layout!");
+    }
+    
+}
+//TODO: uboBufferID is the camera atm, this will need a rethink
+
+int Renderer::createDescriptorSet(unsigned int uboBufferID, unsigned int textureViewID, unsigned int TransformMatrixID) {
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = descriptorPool;
@@ -942,25 +968,30 @@ int Renderer::createDescriptorSet(unsigned int uboBufferID, unsigned int texture
 
     descriptorSets.push_back(descriptorSet);
 
-    VkDescriptorBufferInfo bufferInfo{};
-    bufferInfo.buffer = uniformBuffers[uboBufferID];
-    bufferInfo.offset = 0;
-    bufferInfo.range = sizeof(UniformBufferObject);
+    VkDescriptorBufferInfo cameraBufferInfo{};
+    cameraBufferInfo.buffer = uniformBuffers[uboBufferID];
+    cameraBufferInfo.offset = 0;
+    cameraBufferInfo.range = sizeof(UniformBufferObject);
 
     VkDescriptorImageInfo imageInfo{};
     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     imageInfo.imageView = textureImageViews[textureViewID];
     imageInfo.sampler = textureSamplers[0];
+
+    VkDescriptorBufferInfo transformBufferInfo{};
+    transformBufferInfo.buffer = uniformBuffers[TransformMatrixID];
+    transformBufferInfo.offset = 0;
+    transformBufferInfo.range = sizeof(UniformBufferObject);
     
-    std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+    std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 
     descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptorWrites[0].dstSet = descriptorSets[boundDescriptorSets];
     descriptorWrites[0].dstBinding = 0;
     descriptorWrites[0].dstArrayElement = 0;
-    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     descriptorWrites[0].descriptorCount = 1;
-    descriptorWrites[0].pBufferInfo = &bufferInfo;
+    descriptorWrites[0].pBufferInfo = &cameraBufferInfo;
 
     descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     descriptorWrites[1].dstSet = descriptorSets[boundDescriptorSets];
@@ -969,6 +1000,14 @@ int Renderer::createDescriptorSet(unsigned int uboBufferID, unsigned int texture
     descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     descriptorWrites[1].descriptorCount = 1;
     descriptorWrites[1].pImageInfo = &imageInfo;
+
+    descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrites[2].dstSet = descriptorSets[boundDescriptorSets];
+    descriptorWrites[2].dstBinding = 2;
+    descriptorWrites[2].dstArrayElement = 0;
+    descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    descriptorWrites[2].descriptorCount = 1;
+    descriptorWrites[2].pBufferInfo = &transformBufferInfo;
 
     vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     boundDescriptorSets++;
@@ -1014,11 +1053,6 @@ void Renderer::beginRenderPass(){
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-    for(int i = 0; i < uniformBuffers.size(); i++)
-    {
-        updateUniformBuffer(i);
-    }
-    
     // Check if a previous frame is using this image (i.e. there is its fence to wait on)
     if (imagesInFlight[currentFramebuffer] != VK_NULL_HANDLE) {
         vkWaitForFences(device, 1, &imagesInFlight[currentFramebuffer], VK_TRUE, UINT64_MAX);
@@ -1050,8 +1084,6 @@ void Renderer::beginRenderPass(){
 
     renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
     renderPassInfo.pClearValues = clearValues.data();
-
-    
 
     vkCmdBeginRenderPass(commandBuffers[0], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -1111,6 +1143,17 @@ void Renderer::endRenderPass(){
     
 
     receiveMessage();
+    
+    int cameraBufferID = camera.getCameraBuffer();
+    if(cameraBufferID != -1){
+        UniformBufferObject cameraData = camera.getCurrentCamera();
+        updateUniformBuffer(cameraBufferID, &cameraData, sizeof(UniformBufferObject));
+    }
+    else{
+        int uniformBufferID = createUniformBuffer(sizeof(UniformBufferObject));
+        camera.setCameraBuffer(uniformBufferID);
+    }
+
 }
 
 void Renderer::createSyncObjects() {
@@ -1136,34 +1179,6 @@ void Renderer::createSyncObjects() {
             throw std::runtime_error("failed to create synchronization objects for a frame!");
         }
     }
-}
-
-void Renderer::createDescriptorSetLayout() {
-    VkDescriptorSetLayoutBinding uboLayoutBinding{};
-    uboLayoutBinding.binding = 0;
-    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    uboLayoutBinding.descriptorCount = 1;
-    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    uboLayoutBinding.pImmutableSamplers = nullptr; // Optional  
-
-    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-    samplerLayoutBinding.binding = 1;
-    samplerLayoutBinding.descriptorCount = 1;
-    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    samplerLayoutBinding.pImmutableSamplers = nullptr;
-    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    std::array<VkDescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
-    
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-    layoutInfo.pBindings = bindings.data();
-
-    if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create descriptor set layout!");
-    }
-    
 }
 
 VkFormat Renderer::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
