@@ -3,5 +3,4 @@ textures
 models
 build/**
 libs/**
-headers/**
 *.spv
