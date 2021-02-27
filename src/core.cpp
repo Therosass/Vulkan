@@ -88,7 +88,7 @@ void Core::receiveMessage(){
                 case EVENTS::LOAD_MODEL:
                 {
                     std::cout << "whatever" << std::endl;
-                    std::shared_ptr<Renderable> item = std::make_shared<Renderable>() ;
+                    std::shared_ptr<Renderable> item = std::make_shared<Renderable>();
                     item->init(message->messageText,resourceHandler);
                     std::shared_ptr<TransformationMatrix> transformation = std::make_shared<TransformationMatrix>();
                     transformation->scale = {

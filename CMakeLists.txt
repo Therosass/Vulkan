@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.10)
 
 # environment variables
 
-set( ENV{GLFW} "C:/Temp/cmakeTest/libs/GLFW")
-set( ENV{GLM} "C:/Temp/cmakeTest/libs/GLM")
-set( ENV{TINY} "C:/Temp/cmakeTest/libs/tinyobjloader")
+set( ENV{GLFW} "C:/libs/glfw-3.3.2/build/src")
+set( ENV{GLM} "C:/libs/GLM/build/glm")
+set( ENV{TINY} "C:/libs/tinyobjloader/build")
 set( ENV{Textures} "C:/Temp/cmakeTest/textures/")
 set( ENV{Vulkan} "C:/VulkanSDK/1.2.141.0/Lib32/")
 set( ENV{BOOST} "c:/boost_1_73_0/buildgcc/boost/bin.v2/libs/")
@@ -33,9 +33,11 @@ add_executable(main ./src/main.cpp
 target_compile_features(main PRIVATE cxx_std_17)
 
 # includes
-include_directories("libs/headers/")
-include_directories("libs/headers/stb/")
-include_directories("libs/headers/tinyobjloader/")
+include_directories("C:/libs")
+include_directories("C:/libs/stb")
+include_directories("C:/libs/glm")
+include_directories("C:/libs/tinyobjloader/")
+include_directories("C:/libs/glfw-3.3.2/include/")
 include_directories("headers/")
 include_directories("src/")
 include_directories("C:/VulkanSDK/1.2.148.0/Include/")

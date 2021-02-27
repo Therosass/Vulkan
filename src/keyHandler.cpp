@@ -109,6 +109,7 @@ void KeyHandler::readConfig(std::string filePath){
         std::cout<< "successfully opened config file" << std::endl;
         std::smatch matches;
         while(std::getline(file,currentLine)){
+            std::cout << currentLine << std::endl;
             boost::trim(currentLine);
             if(currentLine[0] != '#'){
                 if(std::regex_match(currentLine, key_set_regex)){

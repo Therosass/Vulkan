@@ -12,6 +12,7 @@
 
 Camera::Camera(){
     resetCamera();
+    this->cameraBuffer = -1;
 }
 
 const glm::vec3& Camera::getCameraPos(){

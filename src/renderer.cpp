@@ -890,7 +890,7 @@ int Renderer::createUniformBuffer(uint32_t size) {
     return (uniformBuffers.size() - 1);
 }
 
-void Renderer::updateUniformBuffer(unsigned int bufferToUpdate, void* data, unsigned int size, unsigned int offset) {
+void Renderer::updateUniformBuffer(unsigned int bufferToUpdate, void* data, unsigned int size, unsigned int offset = 0) {
 
     void* memoryLocation;
     vmaMapMemory(memoryAllocator, uniformBufferAllocations[bufferToUpdate], &memoryLocation);
