@@ -51,7 +51,7 @@ const std::vector<TreeNode*>& SceneGraph::getSceneGraph(){
     for(auto item : workingGraph.getLeaves()){
         if(item->isModified)
         {
-            auto transform = workingGraph.getMatrices()[count];
+            auto transform = workingGraph.getObjectTRMatrices()[count];
             transform->scale = {
                 1.0f, 0.0f, 0.0f, 0.0f,
                 0.0f, 1.0f, 0.0f, 0.0f,
@@ -69,8 +69,8 @@ const std::vector<TreeNode*>& SceneGraph::getSceneGraph(){
                 0.0f, 1.0f, 0.0f, 0.0f,
                 0.0f, 0.0f, 1.0f, 0.0f,
                 0.0f, 0.0f, 0.0f, 1.0f
-            }; 
-            item->updateObject(workingGraph.getMatrices()[count]);
+            };
+            item->updateObject(transform);
             item->objectData->setTRMatrix(item->TRMatrix);
             item->objectData->updateBufferValue();
             item->isModified = false;
@@ -80,3 +80,21 @@ const std::vector<TreeNode*>& SceneGraph::getSceneGraph(){
     return workingGraph.getLeaves();
 }
 
+void SceneGraph::selectNextNode(){
+    selectedNode = workingGraph.getNextTRMatrix();
+}
+
+TreeNode* SceneGraph::getSelectedNode(){
+    if(selectedNode == nullptr){
+        selectNextNode();
+    }
+    return selectedNode;
+}
+
+TreeNode* SceneGraph::findNextNode(TreeNode* currentNode){
+    return nullptr;
+}
+
+void SceneGraph::updateNodes(){
+    
+}

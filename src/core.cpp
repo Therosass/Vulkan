@@ -18,6 +18,7 @@ void Core::run(){
     startModule(WINDOW);
     startModule(LOGIC);
     startModule(RENDERER);
+    logic->setSceneGraph(sceneGraph);
     this->resourceHandler = std::make_shared<ResourceHandler>(renderer);
 
     std::cout << "initalized with" << std::endl 
@@ -87,7 +88,6 @@ void Core::receiveMessage(){
             {
                 case EVENTS::LOAD_MODEL:
                 {
-                    std::cout << "whatever" << std::endl;
                     std::shared_ptr<Renderable> item = std::make_shared<Renderable>();
                     item->init(message->messageText,resourceHandler);
                     std::shared_ptr<TransformationMatrix> transformation = std::make_shared<TransformationMatrix>();

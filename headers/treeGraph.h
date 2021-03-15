@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <optional>
+#include <iostream>
 
 #include "renderable.h"
 
@@ -41,9 +42,17 @@ struct TreeNode{
     std::shared_ptr<TransformationMatrix> TRMatrix;
 
     void updateObject(TransformationMatrix* newMatrix){
-        TRMatrix->rotate = newMatrix->rotate;
-        TRMatrix->translate = newMatrix->translate;
-        TRMatrix->scale = newMatrix->scale;
+        auto objectMatrix = TRMatrix;
+        isModified = false;
+        auto currentNode = this;
+        while(currentNode->parentNode){
+            currentNode = currentNode->parentNode;
+            if(currentNode->nodeType == NODETYPES::TRANSFORMATION_NODE){
+                newMatrix->rotate = newMatrix->rotate * currentNode->TRMatrix->rotate;
+                newMatrix->translate = newMatrix->translate + currentNode->TRMatrix->translate;
+                newMatrix->scale = newMatrix->scale * currentNode->TRMatrix->scale;
+            }
+        }
     }
 
     void updateChildren(Transformation* transform){
@@ -58,6 +67,15 @@ struct TreeNode{
         
     };
 
+    void setUpdated(){
+        for(auto& childNode : childNodes){
+            if(childNode){
+                childNode->setUpdated();
+            }
+        }
+        isModified = true;
+    }
+
     void deleteNode(){
         
         if(transformation != nullptr){
@@ -71,6 +89,16 @@ struct TreeNode{
         }
         
     };
+
+    TreeNode* findRoot(TreeNode* currentNode){
+        while(currentNode->parentNode != nullptr){
+            if(currentNode->parentNode->childNodes.size() > 1){
+                
+            }
+            currentNode = currentNode->parentNode;
+        }
+        return currentNode;
+    }
 };
 
 class TreeGraph{
@@ -81,13 +109,17 @@ public:
     TreeNode* getRoot();
 
     const std::vector<TreeNode*>& getLeaves();
-    const std::vector<TransformationMatrix*>& getMatrices();
+    const std::vector<TransformationMatrix*>& getObjectTRMatrices();
+    TreeNode* getNextTRMatrix();
+    TreeNode* findNextNode(TreeNode* currentNode = nullptr);
 
 private:
     TreeNode* rootNode;
     std::vector<TreeNode*> leaves;
-    std::vector<TransformationMatrix*> TRMatrixArray;
-
+    std::vector<TreeNode*> AllTRMatrices;
+    unsigned int currentMatrix = 0;
+    std::vector<TransformationMatrix*> ObjectTRMatrixArray;
+    
 };
 
 #endif

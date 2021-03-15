@@ -6,6 +6,7 @@
 #include "renderable.h"
 #include "treeGraph.h"
 
+// TODO: Refactor workingGraph/scenegraph it is silly
 
 class Transformation;
 
@@ -34,16 +35,17 @@ public:
     TreeNode* addNode(std::shared_ptr<Renderable> newRenderable, TreeNode* parentNode = nullptr);
     TreeNode* addNode(std::shared_ptr<TransformationMatrix> newTransformation, TreeNode* parentNode = nullptr);
     const std::vector<TreeNode*>& getSceneGraph();
+    void selectNextNode();
+    TreeNode* getSelectedNode();
     //void addNode(Group* newGroup);
     void updateNodes();
 private:
+    TreeNode* findNextNode(TreeNode* currentNode = nullptr);
+    TreeNode* selectedNode = nullptr;
     TreeGraph workingGraph;
     TreeGraph renderGraph;
     boost::condition_variable* cv;
     void notifyRenderer();
-
-
-
 };
 
 #endif

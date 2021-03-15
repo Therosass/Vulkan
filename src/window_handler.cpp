@@ -126,6 +126,15 @@ void WindowHandler::getWindowEvents(){
             case EVENTS::LOAD_MODEL:
                 sendMessage(key.actionBound,MODULES::LOGIC);
                 break;
+            case EVENTS::SELECT_NEXT_OBJECT:
+                sendMessage(EVENTS::SELECT_NEXT_OBJECT, MODULES::LOGIC);
+            break;
+            case EVENTS::MOVE_OBJECT_FORWARD:
+                sendMessage(EVENTS::MOVE_OBJECT_FORWARD, MODULES::LOGIC);
+            break;
+            case EVENTS::MOVE_OBJECT_BACKWARD:
+                sendMessage(EVENTS::MOVE_OBJECT_BACKWARD, MODULES::LOGIC);
+            break;
             default:
                 break;
             
