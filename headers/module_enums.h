@@ -38,7 +38,10 @@ enum EVENTS{
 	CAMERA_STRAFE_RIGHT,
     CAMERA_STRAFE_LEFT,
     CAMERA_RESET,
-    LOAD_MODEL
+    LOAD_MODEL,
+    SELECT_NEXT_OBJECT,
+    MOVE_OBJECT_FORWARD,
+    MOVE_OBJECT_BACKWARD
 };
 
 namespace ENUMMAP {
@@ -50,7 +53,10 @@ namespace ENUMMAP {
                                                          {"CAMERA_RESET", EVENTS::CAMERA_RESET}, \
                                                          {"LOAD_MODEL", EVENTS::LOAD_MODEL}, \
                                                          {"CAMERA_STRAFE_LEFT", EVENTS::CAMERA_STRAFE_LEFT}, \
-                                                         {"CAMERA_STRAFE_RIGHT", EVENTS::CAMERA_STRAFE_RIGHT} \
+                                                         {"CAMERA_STRAFE_RIGHT", EVENTS::CAMERA_STRAFE_RIGHT}, \
+                                                         {"SELECT_NEXT_OBJECT", EVENTS::SELECT_NEXT_OBJECT}, \
+                                                         {"MOVE_OBJECT_FORWARD", EVENTS::MOVE_OBJECT_FORWARD}, \
+                                                         {"MOVE_OBJECT_BACKWARD", EVENTS::MOVE_OBJECT_BACKWARD} \
                                                         };
 
     static std::unordered_map<enum EVENTS, std::string> reverseEventMap = { {EVENTS::WINDOW_RESIZE, "WINDOW_RESIZE"}, \
@@ -61,7 +67,10 @@ namespace ENUMMAP {
                                                          {EVENTS::CAMERA_RESET,"CAMERA_RESET"}, \
                                                          {EVENTS::LOAD_MODEL, "LOAD_MODEL"}, \
                                                          {EVENTS::CAMERA_STRAFE_LEFT, "CAMERA_STRAFE_LEFT"}, \
-                                                         {EVENTS::CAMERA_STRAFE_RIGHT, "CAMERA_STRAFE_RIGHT"} \
+                                                         {EVENTS::CAMERA_STRAFE_RIGHT, "CAMERA_STRAFE_RIGHT"}, \
+                                                         {EVENTS::SELECT_NEXT_OBJECT, "SELECT_NEXT_OBJECT"}, \
+                                                         {EVENTS::MOVE_OBJECT_FORWARD, "MOVE_OBJECT_FORWARD"}, \
+                                                         {EVENTS::MOVE_OBJECT_BACKWARD, "MOVE_OBJECT_BACKWARD"} \
                                                         };
 
 }

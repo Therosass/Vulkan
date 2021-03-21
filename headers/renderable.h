@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
 #include <string>
+#include <iostream>
 
 class ResourceHandler;
 struct ModelHandle;
@@ -17,6 +18,16 @@ struct TransformationMatrix {
     glm::mat4x4 scale;
     glm::mat4x4 translate;
     glm::mat4x4 buffer1;
+    void forward(){
+        translate[3][0]+=0.01f;
+        translate[3][1]+=0.01f;
+        translate[3][2]+=0.01f;
+    };
+    void backward(){
+        translate[3][0]-=0.01f;
+        translate[3][1]-=0.01f;
+        translate[3][2]-=0.01f;
+    };
 };
 
 struct  Vertex {

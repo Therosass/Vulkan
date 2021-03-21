@@ -36,7 +36,7 @@ TreeNode* TreeGraph::addNode(std::unique_ptr<TreeNode> childNode, TreeNode* pare
         };
         newTransform->rotate = {
             1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f, 
             0.0f, 0.0f, 1.0f, 0.0f,
             0.0f, 0.0f, 0.0f, 1.0f
         };
@@ -53,10 +53,16 @@ TreeNode* TreeGraph::addNode(std::unique_ptr<TreeNode> childNode, TreeNode* pare
     std::cout << "child nodes start on: " << rootNode->childNodes.data() << std::endl;
     parentNode->childNodes.push_back(std::move(childNode));
     auto newNode = parentNode->childNodes.back().get();
+
+
+    // TODO: This is horrible with ownership, please fix me
+    if(newNode->nodeType == NODETYPES::TRANSFORMATION_NODE){
+        AllTRMatrices.push_back(newNode);
+    }
     if(newNode->nodeType == NODETYPES::OBJECT_NODE)
     {
         leaves.push_back(newNode);
-        TRMatrixArray.push_back(newNode->TRMatrix.get());
+        ObjectTRMatrixArray.push_back(newNode->TRMatrix.get());
     }
     return newNode;
 }
@@ -78,6 +84,21 @@ const std::vector<TreeNode*>& TreeGraph::getLeaves(){
     return leaves;
 }
 
-const std::vector<TransformationMatrix*>& TreeGraph::getMatrices(){
-    return TRMatrixArray;
+const std::vector<TransformationMatrix*>& TreeGraph::getObjectTRMatrices(){
+    return ObjectTRMatrixArray;
+}
+
+// TODO: Add proper error handling
+
+TreeNode* TreeGraph::getNextTRMatrix(){
+    if(AllTRMatrices.size() == 0){
+        return nullptr;
+    }
+    if(currentMatrix < AllTRMatrices.size() -1){
+        currentMatrix++;   
+    }
+    else{
+        currentMatrix = 0;
+    }    
+    return AllTRMatrices[currentMatrix];
 }
