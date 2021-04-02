@@ -130,10 +130,10 @@ int ResourceHandler::loadModel(std::string modelPath, int objectCount) {
     handle->vertices = vertices;
     handle->TRMatrix = trMatrix;
     handle->TRMatrixID = TRMatrixBufferID;
-    handle->TRMatrixBufferOffset = objectCount*sizeof(UniformBufferObject);
+    handle->TRMatrixBufferOffset = objectCount*sizeof(TransformationMatrix);
     handle->indexBufferID = renderer->createBufferObject(indices.data(), sizeof(indices[0]) * indices.size(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
     handle->vertexBufferID = renderer->createBufferObject(vertices.data(), sizeof(vertices[0]) * vertices.size(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-    renderer->updateUniformBuffer(TRMatrixBufferID, trMatrix.get(), sizeof(UniformBufferObject), handle->TRMatrixBufferOffset);
+    renderer->updateUniformBuffer(TRMatrixBufferID, trMatrix.get(), sizeof(TransformationMatrix), handle->TRMatrixBufferOffset);
 
     modelMap.insert({nextModelID,handle});
     textureStringsMap.insert({modelPath,nextModelID});

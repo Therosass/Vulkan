@@ -88,7 +88,6 @@ void Camera::updateCamera(enum EVENTS movementEvent){
     switch(movementEvent){
         case EVENTS::CAMERA_FORWARD:
         {
-            std::cout << "forward" << std::endl;
             glm::vec3 cameraMovement = (lookPos - cameraPos);
             cameraPos += cameraMovement * 0.01f;
             lookPos += cameraMovement * 0.01f;   
@@ -96,7 +95,6 @@ void Camera::updateCamera(enum EVENTS movementEvent){
         }
         case EVENTS::CAMERA_BACKWARD:
         {
-            std::cout << "backward" << std::endl;
             glm::vec3 cameraMovement = (lookPos - cameraPos);
             cameraPos -= cameraMovement * 0.01f;
             lookPos -= cameraMovement * 0.01f;
@@ -104,7 +102,6 @@ void Camera::updateCamera(enum EVENTS movementEvent){
         }
         case EVENTS::CAMERA_STRAFE_RIGHT:
         {
-            std::cout << "right" << std::endl;
             glm::vec3 cameraMovement = glm::normalize(glm::cross((lookPos - cameraPos),cameraUp));
             cameraPos += cameraMovement * 0.01f;
             lookPos += cameraMovement * 0.01f;
@@ -112,7 +109,6 @@ void Camera::updateCamera(enum EVENTS movementEvent){
         }
         case EVENTS::CAMERA_STRAFE_LEFT:
         {
-            std::cout << "left" << std::endl;
             glm::vec3 cameraMovement = glm::normalize(glm::cross((lookPos - cameraPos),cameraUp));
             cameraPos -= cameraMovement * 0.01f;
             lookPos -= cameraMovement * 0.01f;
@@ -143,11 +139,11 @@ void Camera::resetCamera(){
     cameraRight = glm::normalize(glm::cross(cameraPos,cameraUp));
     lookPos = glm::vec3(0.0f,0.0f,-2.0f);
 
-    std::cout << "Camera Direction " << cameraDir.x << " " << cameraDir.y << std::endl;
-    std::cout << "Camera Position " << cameraPos.x << " " << cameraPos.y << " " << cameraPos.z << std::endl;
-    std::cout << "Look position " << lookPos.x << " " << lookPos.y << " " << lookPos.z << std::endl;
-    std::cout << "Camera up " << cameraUp.x << " " <<  cameraUp.y << " " <<  cameraUp.z << std::endl;
-    std::cout << "Camera right " << cameraRight.x << " " <<  cameraRight.y << " " <<  cameraRight.z << std::endl;
+    //std::cout << "Camera Direction " << cameraDir.x << " " << cameraDir.y << std::endl;
+    //std::cout << "Camera Position " << cameraPos.x << " " << cameraPos.y << " " << cameraPos.z << std::endl;
+    //std::cout << "Look position " << lookPos.x << " " << lookPos.y << " " << lookPos.z << std::endl;
+    //std::cout << "Camera up " << cameraUp.x << " " <<  cameraUp.y << " " <<  cameraUp.z << std::endl;
+    //std::cout << "Camera right " << cameraRight.x << " " <<  cameraRight.y << " " <<  cameraRight.z << std::endl;
 }
 
 glm::vec3 Camera::readNewCameraPos(std::string posAsString, std::error_code* ec){
