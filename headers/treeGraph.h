@@ -4,6 +4,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include <optional>
 #include <iostream>
 
@@ -37,7 +38,6 @@ struct TreeNode{
     TreeNode* parentNode;
     std::vector<std::unique_ptr<TreeNode>> childNodes;
     enum NODETYPES nodeType;
-    std::shared_ptr<Transformation> transformation;
     std::shared_ptr<Renderable> objectData;
     std::shared_ptr<TransformationMatrix> TRMatrix;
 
@@ -49,23 +49,13 @@ struct TreeNode{
             currentNode = currentNode->parentNode;
             if(currentNode->nodeType == NODETYPES::TRANSFORMATION_NODE){
                 newMatrix->rotate = newMatrix->rotate * currentNode->TRMatrix->rotate;
-                newMatrix->translate = newMatrix->translate + currentNode->TRMatrix->translate;
+                newMatrix->translate[3][0] = newMatrix->translate[3][0] + currentNode->TRMatrix->translate[3][0];
+                newMatrix->translate[3][1] = newMatrix->translate[3][1] + currentNode->TRMatrix->translate[3][1];
+                newMatrix->translate[3][2] = newMatrix->translate[3][2] + currentNode->TRMatrix->translate[3][2];
                 newMatrix->scale = newMatrix->scale * currentNode->TRMatrix->scale;
             }
         }
     }
-
-    void updateChildren(Transformation* transform){
-        
-        if(nodeType == NODETYPES::OBJECT_NODE){
-            *transformation = *transformation * (*transform);
-        }
-        for(auto& child : childNodes){
-
-        }
-        isModified = false;
-        
-    };
 
     void setUpdated(){
         for(auto& childNode : childNodes){
@@ -78,8 +68,8 @@ struct TreeNode{
 
     void deleteNode(){
         
-        if(transformation != nullptr){
-            transformation.reset();
+        if(TRMatrix != nullptr){
+            TRMatrix.reset();
         }
         if(objectData  != nullptr){
             objectData.reset();

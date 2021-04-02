@@ -16,7 +16,7 @@ class Transformation;
 *       - adding new nodes to be rendered
 *       - updating the renderable tree nodes after game logic finished modifying them
 *       - notifying the renderer that the render process can begin
-*       - 
+*       -   
 */ 
 
 /*
@@ -37,6 +37,7 @@ public:
     const std::vector<TreeNode*>& getSceneGraph();
     void selectNextNode();
     TreeNode* getSelectedNode();
+    void printNodes();
     //void addNode(Group* newGroup);
     void updateNodes();
 private:

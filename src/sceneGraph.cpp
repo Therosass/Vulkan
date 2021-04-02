@@ -91,6 +91,18 @@ TreeNode* SceneGraph::getSelectedNode(){
     return selectedNode;
 }
 
+void SceneGraph::printNodes(){
+    int counter = 0;
+    for(auto node : workingGraph.getLeaves()){
+        counter++;
+        std::cout << "object " << counter << ": " << "rotate matrix" << glm::to_string(node->TRMatrix->rotate) << std::endl;
+        std::cout << "object " << counter << ": " << "translate matrix" << glm::to_string(node->TRMatrix->translate) << std::endl;
+        std::cout << "object " << counter << ": " << "scale matrix" << glm::to_string(node->TRMatrix->scale) << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+
 TreeNode* SceneGraph::findNextNode(TreeNode* currentNode){
     return nullptr;
 }

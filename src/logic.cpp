@@ -72,6 +72,10 @@ void Logic::receiveMessage(){
                                 loadModel(MODEL_PATH2);
                                 test++;
                                 break;
+                            case 2:
+                                loadModel(MODEL_PATH);
+                                test++;
+                                break;
                             default:
                                 break;
                         }
