@@ -6,7 +6,6 @@
 
 Core::Core(){
     this->moduleRole = MODULES::CORE;
-    this->coreModule = this;
     this->msgHandler = std::make_shared<MessageHandler>();
     this->sceneGraph = std::make_unique<SceneGraph>();
     cv = msgHandler->getConditionVariablePtr();

@@ -9,14 +9,14 @@ layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
 
 
-layout(binding = 0) uniform UniformBufferObject {
+layout(set = 1, binding = 0) uniform UniformBufferObject {
     mat4 model;
     mat4 view;
     mat4 proj;
     mat4 buffer0;
 } ubo;
 
-layout(binding = 2) uniform UniformBufferObject2 {
+layout(set = 1, binding = 2) uniform UniformBufferObject2 {
     mat4 rotationMatrix;
     mat4 scaleMatrix;
     mat4 translationMatrix;

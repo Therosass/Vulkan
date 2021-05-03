@@ -132,7 +132,6 @@ protected:
     boost::condition_variable* cv;
     int currentPacketID = 0;
     enum MODULES moduleRole;
-    Module* coreModule = nullptr;
 
     boost::mutex readGuard;
     boost::mutex writeGuard;

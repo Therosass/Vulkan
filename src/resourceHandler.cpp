@@ -17,6 +17,8 @@ ResourceHandler::ResourceHandler(std::shared_ptr<Renderer> renderer){
 int ResourceHandler::loadTexture(std::string texturePath){
     std::cout << "loading texture for: " << texturePath << std::endl;
     auto it = textureStringsMap.find(texturePath);
+
+    // Return found handle if image is already loaded
     if(it != textureStringsMap.end()){
         return it->second;
     }

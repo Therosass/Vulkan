@@ -85,6 +85,9 @@ struct UniformBufferObject {
     glm::mat4 proj;
 };
 
+struct LightObject{
+    alignas(16) glm::mat3 lightcoord;
+};
 
 class Renderable{
 public:

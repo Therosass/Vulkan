@@ -34,8 +34,58 @@ class Core;
  * 
 ****/
 
+static glm::mat3 getLights(){
+    glm::mat3 light = {
+        0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0
+    };
+    return light;
+}
 
+static bool initLight = false;
+static unsigned int lightID = 0;
 
+static std::vector<VkDescriptorSetLayoutBinding> createLayoutInfos(int location){
+    std::vector<VkDescriptorSetLayoutBinding> layouts;
+    if(location){
+        VkDescriptorSetLayoutBinding uboLayoutBinding{};
+        uboLayoutBinding.binding = 0;
+        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        uboLayoutBinding.descriptorCount = 1;
+        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        uboLayoutBinding.pImmutableSamplers = nullptr; // Optional  
+
+        VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+        samplerLayoutBinding.binding = 1;
+        samplerLayoutBinding.descriptorCount = 1;
+        samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        samplerLayoutBinding.pImmutableSamplers = nullptr;
+        samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+        VkDescriptorSetLayoutBinding transformLayoutBinding{};
+        transformLayoutBinding.binding = 2;
+        transformLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        transformLayoutBinding.descriptorCount = 1;
+        transformLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        transformLayoutBinding.pImmutableSamplers = nullptr; // Optional
+        layouts.push_back(uboLayoutBinding);  
+        layouts.push_back(samplerLayoutBinding);  
+        layouts.push_back(transformLayoutBinding);
+    }
+    else{
+        VkDescriptorSetLayoutBinding lightLayoutBinding{};
+        lightLayoutBinding.binding = 0;
+        lightLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        lightLayoutBinding.descriptorCount = 1;
+        lightLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        lightLayoutBinding.pImmutableSamplers = nullptr; // Optional
+        layouts.push_back(lightLayoutBinding);  
+    }
+    return layouts;  
+};
+
+static unsigned int lightDescriptorsetID = -1;
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -217,14 +267,15 @@ private:
 
     VkDescriptorPool descriptorPool;
     std::vector<VkDescriptorSet> descriptorSets;
-    VkDescriptorSetLayout descriptorSetLayout;
+    std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
     size_t boundDescriptorSets = 0;
 
 public:
     int createDescriptorSet(unsigned int uboBufferID, unsigned int textureViewID, unsigned int TransformMatrixID);
+    int createDescriptorSet(unsigned int lightBufferID);
 
 private:
-    void createDescriptorSetLayout();
+    void createDescriptorSetLayout(int location, std::vector<VkDescriptorSetLayoutBinding> bindings);
     void createDescriptorPool();
 
 /****
