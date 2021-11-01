@@ -8,10 +8,12 @@
 #include <glm/gtx/hash.hpp>
 #include <string>
 #include <iostream>
+#include "light.h"
 
 class ResourceHandler;
 struct ModelHandle;
 struct TextureHandle;
+
 
 struct TransformationMatrix {
     glm::mat4x4 rotate;
@@ -33,7 +35,9 @@ struct TransformationMatrix {
 struct  Vertex {
     glm::vec3 pos;
     glm::vec3 color;
+    glm::vec3 normCoord;
     glm::vec2 texCoord;
+
 
     static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription bindingDescription{};
@@ -43,8 +47,8 @@ struct  Vertex {
         return bindingDescription;
     }
 
-    static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
-        std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
+    static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions{};
 
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
@@ -54,12 +58,17 @@ struct  Vertex {
         attributeDescriptions[1].binding = 0;
         attributeDescriptions[1].location = 1;
         attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(Vertex, color);
+        attributeDescriptions[1].offset = offsetof(Vertex, normCoord);
 
         attributeDescriptions[2].binding = 0;
         attributeDescriptions[2].location = 2;
         attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
         attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+
+        attributeDescriptions[3].binding = 0;
+        attributeDescriptions[3].location = 3;
+        attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[3].offset = offsetof(Vertex, color);
 
         return attributeDescriptions;
     }   
@@ -83,10 +92,7 @@ struct UniformBufferObject {
     glm::mat4 model;
     glm::mat4 view;
     glm::mat4 proj;
-};
-
-struct LightObject{
-    alignas(16) glm::mat3 lightcoord;
+    glm::mat4 buffer;
 };
 
 class Renderable{

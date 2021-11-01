@@ -90,7 +90,10 @@ void Camera::updateCamera(enum EVENTS movementEvent){
         {
             glm::vec3 cameraMovement = (lookPos - cameraPos);
             cameraPos += cameraMovement * 0.01f;
-            lookPos += cameraMovement * 0.01f;   
+            lookPos += cameraMovement * 0.01f;
+            std::cout << "camera x: " << cameraPos.x << "\n" \ 
+                        << "camera y: " << cameraPos.y << "\n" \ 
+                        << "camera z: " << cameraPos.z << "\n";
             break;
         }
         case EVENTS::CAMERA_BACKWARD:
@@ -124,7 +127,13 @@ UniformBufferObject Camera::getCurrentCamera(){
     currentCamera.model = glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     currentCamera.view = glm::lookAt(getCameraPos(), getCameraLookPos(), getCameraUp());
     currentCamera.proj = glm::perspective(glm::radians(45.0f), swapchainExtent.width / (float) swapchainExtent.height, 0.1f, 10.0f);
+    glm::vec3 cameraPos = getCameraPos();
     currentCamera.proj[1][1] *= -1;
+    
+    currentCamera.buffer[0][0] = cameraPos[0];
+    currentCamera.buffer[0][1] = cameraPos[1];
+    currentCamera.buffer[0][2] = cameraPos[2];
+
 
     return currentCamera;
 }

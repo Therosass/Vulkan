@@ -51,11 +51,11 @@ public:
 private:
     std::unordered_map<int,std::shared_ptr<TextureHandle>> textureMap;
     std::unordered_map<std::string,int> textureStringsMap;
-    int nextTextureID = 0;
+    static int nextTextureID;
 
     std::unordered_map<int,std::shared_ptr<ModelHandle>> modelMap;
     std::unordered_map<std::string,int> modelStringsMap;
-    int nextModelID = 0;
+    static int nextModelID;
 
     static int TRMatrixBufferID;
 

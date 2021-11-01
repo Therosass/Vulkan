@@ -39,6 +39,7 @@ private:
  * 
  ****/
     std::shared_ptr<SceneGraph> sceneGraph;
+    std::shared_ptr<SceneGraph> uiSceneGraph;
     std::shared_ptr<MessageHandler> msgHandler;
     std::shared_ptr<Logic> logic;
     boost::thread* message_thread;

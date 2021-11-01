@@ -34,14 +34,7 @@ class Core;
  * 
 ****/
 
-static glm::mat3 getLights(){
-    glm::mat3 light = {
-        0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0
-    };
-    return light;
-}
+static LightObject light;
 
 static bool initLight = false;
 static unsigned int lightID = 0;
@@ -124,8 +117,10 @@ public:
     void start(std::shared_ptr<Core> engineCore, GLFWwindow* window);
     void render(Renderable object);
     void renderScene(const std::vector<TreeNode*>& items);
+    void renderUI(const std::vector<TreeNode*>& items);
     Renderer();
     ~Renderer();
+    LightObject getLights();
 
 private:
 
@@ -207,10 +202,10 @@ private:
  ****/
 
     VkPipelineLayout pipelineLayout;
-    VkPipeline graphicsPipeline;
+    VkPipeline graphicsPipeline[2];
 
     VkShaderModule createShaderModule(const std::vector<char>& code);   
-    void createGraphicsPipeline();
+    void createGraphicsPipeline(const std::string& vertShaderCode, const std::string& fragShaderCode, int pipelinePos);
 
 /****
  * 

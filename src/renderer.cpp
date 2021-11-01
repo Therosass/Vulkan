@@ -17,6 +17,29 @@
 
 #include "core.h"
 
+static bool testVar = false;
+static int  pipeline = 0;
+
+/*****
+ * 
+ * Renderer generic declarations
+ * 
+*****/
+
+LightObject Renderer::getLights(){
+    LightObject light;
+    light.position = glm::vec3(0.607f,0.682f,0.523f);
+    light.color = glm::vec3(0.0f,0.0f,0.0f);
+    light.diffuse = glm::vec3(0.4f,0.5f,0.2f);
+    light.specular = glm::vec3(1.0f,1.0f,1.0f);
+
+    light.constant = 0.2f;
+    light.linear = 1.0f;
+    light.quadratic = 0.01f;
+
+    return light;
+}
+
 
 /*****
  * 
@@ -40,9 +63,13 @@ void Renderer::render(Renderable object){
     std::cout << "index buffer ID: " << object.getIndexBuffer() << std::endl;
     std::cout << "vertex buffer ID: " << object.getVertexBuffer() << std::endl;
     std::cout << "vertex amount: " << object.getIndiceAmount() << std::endl;
+    const VkDescriptorSet currentDescriptorSets[2] = {
+        lightDescriptorsetID,
+        descriptorSets[object.getDescriptorSet()]
+    };
 
 
-    vkCmdBindDescriptorSets(commandBuffers[0], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[object.getDescriptorSet()], 0, nullptr);
+    vkCmdBindDescriptorSets(commandBuffers[0], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 2, currentDescriptorSets, 0, nullptr);
     vkCmdBindIndexBuffer(commandBuffers[0], bufferObjects[object.getIndexBuffer()], 0, VK_INDEX_TYPE_UINT32);
     
     vkCmdBindVertexBuffers(commandBuffers[0], 0, 1, &bufferObjects[object.getVertexBuffer()], offsets);
@@ -52,13 +79,36 @@ void Renderer::render(Renderable object){
 
 void Renderer::renderScene(const std::vector<TreeNode*>& items){
     VkDeviceSize offsets[] = {0};
-    //uint32_t test[2] = {0, 0};
+    vkCmdBindPipeline(commandBuffers[0], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[0]);
 
 
     for(auto item: items){
-        uint32_t test[2] = {0, item->objectData->getTRBufferOffset()};
+        uint32_t TRBufferOffsets[3] = {0, 0, item->objectData->getTRBufferOffset()};
+        const VkDescriptorSet currentDescriptorSets[2] = {
+            descriptorSets[0],
+            descriptorSets[item->objectData->getDescriptorSet()]    
+        };
+        
+        vkCmdBindDescriptorSets(commandBuffers[0], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 2, currentDescriptorSets, 3, TRBufferOffsets);
+        vkCmdBindIndexBuffer(commandBuffers[0], bufferObjects[item->objectData->getIndexBuffer()], 0, VK_INDEX_TYPE_UINT32);
+        
+        vkCmdBindVertexBuffers(commandBuffers[0], 0, 1, &bufferObjects[item->objectData->getVertexBuffer()], offsets);
+        vkCmdDrawIndexed(commandBuffers[0], item->objectData->getIndiceAmount(), 1, 0, 0, 0);
+    }
+}
 
-        vkCmdBindDescriptorSets(commandBuffers[0], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[item->objectData->getDescriptorSet()], 2, test);
+void Renderer::renderUI(const std::vector<TreeNode*>& items){
+    vkCmdBindPipeline(commandBuffers[0], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline[1]);
+    VkDeviceSize offsets[] = {0};
+
+    for(auto item: items){
+        uint32_t TRBufferOffsets[3] = {0, 0, item->objectData->getTRBufferOffset()};
+        const VkDescriptorSet currentDescriptorSets[2] = {
+            descriptorSets[0],
+            descriptorSets[item->objectData->getDescriptorSet()]
+        };
+        
+        vkCmdBindDescriptorSets(commandBuffers[0], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 2, currentDescriptorSets, 3, TRBufferOffsets);
         vkCmdBindIndexBuffer(commandBuffers[0], bufferObjects[item->objectData->getIndexBuffer()], 0, VK_INDEX_TYPE_UINT32);
         
         vkCmdBindVertexBuffers(commandBuffers[0], 0, 1, &bufferObjects[item->objectData->getVertexBuffer()], offsets);
@@ -228,7 +278,7 @@ void Renderer::cleanup() {
 
     vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 
-    vkDestroyPipeline(device, graphicsPipeline, nullptr);
+    vkDestroyPipeline(device, graphicsPipeline[0], nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     vkDestroyRenderPass(device, renderPass, nullptr);
 
@@ -301,7 +351,8 @@ void Renderer::initVulkan(){
     createRenderPass();
     createDescriptorSetLayout(0, createLayoutInfos(0));
     createDescriptorSetLayout(1, createLayoutInfos(1));
-    createGraphicsPipeline();
+    createGraphicsPipeline("C:/Temp/cmakeTest/shaders/vert.spv", "C:/Temp/cmakeTest/shaders/frag.spv", 0);
+    createGraphicsPipeline("C:/Temp/cmakeTest/shaders/uivert.spv", "C:/Temp/cmakeTest/shaders/uifrag.spv", 1);
     createDepthResources();
     createFramebuffers();
     createTextureSampler();
@@ -352,8 +403,9 @@ bool Renderer::checkDeviceExtensionSupport(VkPhysicalDevice device) {
 
     std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
-    for (const auto& extension : availableExtensions) {
-    requiredExtensions.erase(extension.extensionName);
+    for (const auto& extension : availableExtensions)
+    {
+        requiredExtensions.erase(extension.extensionName);
     }
 
     return requiredExtensions.empty();
@@ -579,12 +631,12 @@ VkShaderModule Renderer::createShaderModule(const std::vector<char>& code) {
     return shaderModule;
 }
 
-void Renderer::createGraphicsPipeline(){
-    auto vertShaderCode = readFile("C:/Temp/cmakeTest/shaders/vert.spv");
-    auto fragShaderCode = readFile("C:/Temp/cmakeTest/shaders/frag.spv");
+void Renderer::createGraphicsPipeline(const std::string& vertShaderCode, const std::string& fragShaderCode, int pipelinePos){
+    auto vertShader = readFile(vertShaderCode);
+    auto fragShader = readFile(fragShaderCode);
 
-    VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
-    VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
+    VkShaderModule vertShaderModule = createShaderModule(vertShader);
+    VkShaderModule fragShaderModule = createShaderModule(fragShader);
 
     VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
     vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -724,12 +776,9 @@ void Renderer::createGraphicsPipeline(){
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineInfo.basePipelineIndex = -1; // Optional
 
-    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+    if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline[pipelinePos]) != VK_SUCCESS) {
         throw std::runtime_error("failed to create graphics pipeline!");
     }
-
-    vkDestroyShaderModule(device, fragShaderModule, nullptr);
-    vkDestroyShaderModule(device, vertShaderModule, nullptr);
 }
 
 void Renderer::createRenderPass() {
@@ -901,15 +950,15 @@ void Renderer::updateUniformBuffer(unsigned int bufferToUpdate, void* data, unsi
 void Renderer::createDescriptorPool() {
     std::array<VkDescriptorPoolSize, 2> poolSizes{};
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    poolSizes[0].descriptorCount = static_cast<uint32_t>(64);
+    poolSizes[0].descriptorCount = static_cast<uint32_t>(256);
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>(64);
+    poolSizes[1].descriptorCount = static_cast<uint32_t>(256);
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size());
+    poolInfo.maxSets = static_cast<uint32_t>(swapChainImages.size())*2  ;
 
     if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
         throw std::runtime_error("failed to create descriptor pool!");
@@ -1012,7 +1061,7 @@ int Renderer::createDescriptorSet(unsigned int lightBufferID) {
     VkDescriptorBufferInfo lightBufferInfo{};
     lightBufferInfo.buffer = uniformBuffers[lightBufferID];
     lightBufferInfo.offset = 0;
-    lightBufferInfo.range = sizeof(glm::mat3);
+    lightBufferInfo.range = sizeof(LightObject);
 
     std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
 
@@ -1056,9 +1105,9 @@ void Renderer::createCommandBuffers(){
 
 void Renderer::beginRenderPass(){
     if(!initLight){
-        auto ID = createUniformBuffer(sizeof(glm::mat3));
+        auto ID = createUniformBuffer(sizeof(LightObject));
         auto data = getLights();
-        updateUniformBuffer(ID, &data, sizeof(glm::mat3), 0);
+        updateUniformBuffer(ID, &data, sizeof(LightObject), 0);
         lightID = createDescriptorSet(ID);
         initLight = true;
     }
@@ -1108,9 +1157,6 @@ void Renderer::beginRenderPass(){
     renderPassInfo.pClearValues = clearValues.data();
 
     vkCmdBeginRenderPass(commandBuffers[0], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-    vkCmdBindPipeline(commandBuffers[0], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
-
 }
 
 void Renderer::endRenderPass(){
@@ -1589,6 +1635,13 @@ void Renderer::receiveMessage(){
                 case EVENTS::CAMERA_RESET:
                 {
                     std::cout << "reset" << std::endl;
+                    if(testVar){
+                        pipeline = 0;
+                        testVar != testVar;
+                    }
+                    else{
+                        pipeline = 1;
+                    }
                     camera.resetCamera();
                     break;
                 }

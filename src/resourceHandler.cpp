@@ -8,6 +8,8 @@
 #include <tiny_obj_loader.h>
 
 int ResourceHandler::TRMatrixBufferID = 0;
+int ResourceHandler::nextTextureID = 0;
+int ResourceHandler::nextModelID = 0;
 
 ResourceHandler::ResourceHandler(std::shared_ptr<Renderer> renderer){
     this->renderer = renderer;
@@ -88,6 +90,12 @@ int ResourceHandler::loadModel(std::string modelPath, int objectCount) {
                 attrib.vertices[3 * index.vertex_index + 0],
                 attrib.vertices[3 * index.vertex_index + 1],
                 attrib.vertices[3 * index.vertex_index + 2]
+            };
+
+            vertex.normCoord = {
+                attrib.normals[3 * index.normal_index + 0],
+                attrib.normals[3 * index.normal_index + 1],
+                attrib.normals[3 * index.normal_index + 2]
             };
 
             vertex.texCoord = {

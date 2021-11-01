@@ -7,7 +7,8 @@
 Core::Core(){
     this->moduleRole = MODULES::CORE;
     this->msgHandler = std::make_shared<MessageHandler>();
-    this->sceneGraph = std::make_unique<SceneGraph>();
+    this->sceneGraph = std::make_shared<SceneGraph>();
+    this->uiSceneGraph = std::make_shared<SceneGraph>();
     cv = msgHandler->getConditionVariablePtr();
     message_thread = new boost::thread(MessageHandler::run, msgHandler);
     msgHandler->registerModule(std::shared_ptr<Core>(this));
@@ -17,7 +18,7 @@ void Core::run(){
     startModule(WINDOW);
     startModule(LOGIC);
     startModule(RENDERER);
-    logic->setSceneGraph(sceneGraph);
+    logic->setSceneGraph(sceneGraph, uiSceneGraph);
     this->resourceHandler = std::make_shared<ResourceHandler>(renderer);
 
     std::cout << "initalized with" << std::endl 
@@ -33,6 +34,7 @@ void Core::run(){
         logic->update();
         renderer->beginRenderPass();
         renderer->renderScene(sceneGraph->getSceneGraph());
+        renderer->renderUI(uiSceneGraph->getSceneGraph());
         renderer->endRenderPass();
 	}
 }
@@ -87,6 +89,7 @@ void Core::receiveMessage(){
             {
                 case EVENTS::LOAD_MODEL:
                 {
+                    static bool totallygoodsolution = false;
                     std::shared_ptr<Renderable> item = std::make_shared<Renderable>();
                     item->init(message->messageText,resourceHandler);
                     std::shared_ptr<TransformationMatrix> transformation = std::make_shared<TransformationMatrix>();
@@ -107,9 +110,16 @@ void Core::receiveMessage(){
                         0.0f, 1.0f, 0.0f, 0.0f,
                         0.0f, 0.0f, 1.0f, 0.0f,
                         0.0f, 0.0f, 0.0f, 1.0f
-                    };  
-                    auto result = sceneGraph->addNode(transformation);
-                    sceneGraph->addNode(item, result);
+                    };
+                    if(totallygoodsolution){
+                        auto result = sceneGraph->addNode(transformation);
+                        sceneGraph->addNode(item, result);
+                    }
+                    else{
+                        auto result = uiSceneGraph->addNode(transformation);
+                        uiSceneGraph->addNode(item, result);
+                        totallygoodsolution = true;
+                    }
                 break;
                 }
     

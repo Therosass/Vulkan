@@ -14,13 +14,14 @@ public:
     //void init(std::shared_ptr<Core> engineCore);
     void update();
     void loadModel(std::string path);
-    void setSceneGraph(std::shared_ptr<SceneGraph> newSceneGraph);
+    void setSceneGraph(std::shared_ptr<SceneGraph> newSceneGraph, std::shared_ptr<SceneGraph> newUISceneGraph);
 
 private:
 
     int test = 0;
 
     std::shared_ptr<SceneGraph> sceneGraph;
+    std::shared_ptr<SceneGraph> uiSceneGraph;
 
     /*****
      * 

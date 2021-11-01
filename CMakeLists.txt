@@ -12,7 +12,7 @@ set(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations")
 set(CMAKE_BUILD_TYPE "Debug")
 
 # set the project name
-project(Tutorial)
+project(Tutorial)   
 
 # add the executable
 add_executable(main ./src/main.cpp 
@@ -28,7 +28,8 @@ add_executable(main ./src/main.cpp
                     ./src/resourceHandler.cpp 
                     ./src/renderable.cpp 
                     ./src/treeGraph.cpp 
-                    ./src/sceneGraph.cpp)
+                    ./src/sceneGraph.cpp) 
+                    
                     
 target_compile_features(main PRIVATE cxx_std_17)
 
